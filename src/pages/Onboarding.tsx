@@ -54,17 +54,7 @@ export default function Onboarding() {
   return (
     <PageTransition>
       <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
-        {/* Background decorations */}
-        <motion.div
-          className="absolute top-[-15%] right-[-5%] w-[400px] h-[400px] rounded-full gradient-primary opacity-10 blur-3xl pointer-events-none"
-          animate={{ scale: [1, 1.15, 1], rotate: [0, 45, 0] }}
-          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute bottom-[-10%] left-[-5%] w-[350px] h-[350px] rounded-full bg-accent opacity-10 blur-3xl pointer-events-none"
-          animate={{ scale: [1, 1.1, 1] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-        />
+        <AnimatedBackground />
 
         {/* Top bar with nav icons */}
         <motion.div

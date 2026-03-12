@@ -54,6 +54,7 @@ export default function Auth() {
   return (
     <PageTransition>
       <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden">
+        <AnimatedBackground />
         {/* Theme toggle */}
         <motion.button
           onClick={toggleTheme}
