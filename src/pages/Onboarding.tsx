@@ -8,6 +8,7 @@ import { Code, Database, Brain, Palette, Smartphone, Shield, Sparkles, Home, Use
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import PageTransition from "@/components/PageTransition";
 import { motion, AnimatePresence } from "framer-motion";
+import AnimatedBackground from "@/components/AnimatedBackground";
 
 const interests: { label: Interest; icon: React.ElementType; desc: string; color: string }[] = [
   { label: "Web Development", icon: Code, desc: "HTML, CSS, JS, React & more", color: "250 76% 58%" },
