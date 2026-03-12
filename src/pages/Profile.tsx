@@ -52,7 +52,35 @@ export default function Profile() {
   const [uploading, setUploading] = useState(false);
   const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
   const [subjectInput, setSubjectInput] = useState("");
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Invalid file", description: "Please upload an image file.", variant: "destructive" });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Maximum size is 5MB.", variant: "destructive" });
+      return;
+    }
+    setUploading(true);
+    const ext = file.name.split(".").pop();
+    const filePath = `${user.id}/avatar.${ext}`;
+    const { error } = await supabase.storage.from("avatars").upload(filePath, file, { upsert: true });
+    if (error) {
+      toast({ title: "Upload failed", description: error.message, variant: "destructive" });
+      setUploading(false);
+      return;
+    }
+    const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(filePath);
+    const avatarUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+    setProfile(p => ({ ...p, avatar_url: avatarUrl }));
+    await supabase.from("profiles").update({ avatar_url: avatarUrl }).eq("user_id", user.id);
+    toast({ title: "Photo updated", description: "Your profile photo has been uploaded." });
+    setUploading(false);
+  };
 
   const toggleTheme = () => {
     const next = !dark;
