@@ -220,10 +220,20 @@ export default function Profile() {
             <Card className="overflow-hidden glass border-border/50 glow-sm">
               {/* Avatar section */}
               <div className="gradient-primary p-8 flex flex-col items-center gap-4">
-                <Avatar className="h-24 w-24 border-4 border-background shadow-xl">
-                  <AvatarImage src={profile.avatar_url} />
-                  <AvatarFallback className="text-2xl font-bold bg-background text-primary">{initials}</AvatarFallback>
-                </Avatar>
+                <div className="relative group">
+                  <Avatar className="h-24 w-24 border-4 border-background shadow-xl">
+                    <AvatarImage src={profile.avatar_url} />
+                    <AvatarFallback className="text-2xl font-bold bg-background text-primary">{initials}</AvatarFallback>
+                  </Avatar>
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                    className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                  >
+                    {uploading ? <Loader2 className="h-6 w-6 animate-spin text-white" /> : <Camera className="h-6 w-6 text-white" />}
+                  </button>
+                  <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+                </div>
                 <p className="text-sm text-primary-foreground/80">{user?.email}</p>
               </div>
 
