@@ -260,10 +260,6 @@ export default function Profile() {
                     <Label htmlFor="bio">Bio</Label>
                     <Textarea id="bio" value={profile.bio} onChange={e => update("bio", e.target.value)} placeholder="Tell us about yourself..." rows={3} />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="avatar_url">Avatar URL</Label>
-                    <Input id="avatar_url" value={profile.avatar_url} onChange={e => update("avatar_url", e.target.value)} placeholder="https://example.com/avatar.png" />
-                  </div>
                 </div>
 
                 <Separator />
