@@ -12,6 +12,7 @@ import QuizTab from "@/components/dashboard/QuizTab";
 import ProgressTab from "@/components/dashboard/ProgressTab";
 import PageTransition from "@/components/PageTransition";
 import { motion, AnimatePresence } from "framer-motion";
+import AnimatedBackground from "@/components/AnimatedBackground";
 
 export default function Dashboard() {
   const { interest, level } = useMentor();
