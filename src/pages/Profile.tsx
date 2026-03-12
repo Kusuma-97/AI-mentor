@@ -13,6 +13,7 @@ import { ArrowLeft, Save, Loader2, Sun, Moon, User, Phone, MapPin, Github, Linke
 import { useToast } from "@/hooks/use-toast";
 import PageTransition from "@/components/PageTransition";
 import { motion, AnimatePresence } from "framer-motion";
+import AnimatedBackground from "@/components/AnimatedBackground";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Separator } from "@/components/ui/separator";
 
@@ -182,7 +183,7 @@ export default function Profile() {
   return (
     <PageTransition>
       <div className="min-h-screen bg-background relative overflow-hidden">
-        <div className="absolute top-0 left-0 right-0 h-64 gradient-primary opacity-5 blur-2xl pointer-events-none" />
+        <AnimatedBackground />
 
         <motion.header
           className="border-b bg-card/80 backdrop-blur-md px-4 py-3 flex items-center gap-3 relative z-10"

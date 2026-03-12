@@ -12,6 +12,7 @@ import QuizTab from "@/components/dashboard/QuizTab";
 import ProgressTab from "@/components/dashboard/ProgressTab";
 import PageTransition from "@/components/PageTransition";
 import { motion, AnimatePresence } from "framer-motion";
+import AnimatedBackground from "@/components/AnimatedBackground";
 
 export default function Dashboard() {
   const { interest, level } = useMentor();
@@ -35,8 +36,7 @@ export default function Dashboard() {
   return (
     <PageTransition>
       <div className="min-h-screen bg-background relative overflow-hidden">
-        {/* Background accent */}
-        <div className="absolute top-0 left-0 right-0 h-48 gradient-primary opacity-5 blur-2xl pointer-events-none" />
+        <AnimatedBackground />
 
         {/* Header */}
         <motion.header
