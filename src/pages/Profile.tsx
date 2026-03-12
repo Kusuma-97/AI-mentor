@@ -49,8 +49,10 @@ export default function Profile() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
   const [subjectInput, setSubjectInput] = useState("");
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const toggleTheme = () => {
     const next = !dark;
