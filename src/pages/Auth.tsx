@@ -68,17 +68,8 @@ export default function Auth() {
             </motion.span>
           </AnimatePresence>
         </motion.button>
-        {/* Animated background blobs */}
-        <motion.div
-          className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full gradient-primary opacity-20 blur-3xl"
-          animate={{ x: [0, 40, 0], y: [0, 30, 0], scale: [1, 1.1, 1] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute bottom-[-20%] right-[-10%] w-[400px] h-[400px] rounded-full bg-accent opacity-15 blur-3xl"
-          animate={{ x: [0, -30, 0], y: [0, -40, 0], scale: [1, 1.15, 1] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-        />
+
+
 
         <motion.div
           className="w-full max-w-md relative z-10"
