@@ -13,6 +13,7 @@ import { ArrowLeft, Save, Loader2, Sun, Moon, User, Phone, MapPin, Github, Linke
 import { useToast } from "@/hooks/use-toast";
 import PageTransition from "@/components/PageTransition";
 import { motion, AnimatePresence } from "framer-motion";
+import AnimatedBackground from "@/components/AnimatedBackground";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Separator } from "@/components/ui/separator";
 
