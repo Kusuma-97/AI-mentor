@@ -9,6 +9,7 @@ import { Sparkles, Loader2, Sun, Moon } from "lucide-react";
 import { toast } from "sonner";
 import PageTransition from "@/components/PageTransition";
 import { motion, AnimatePresence } from "framer-motion";
+import AnimatedBackground from "@/components/AnimatedBackground";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
