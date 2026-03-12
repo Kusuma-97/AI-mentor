@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Save, Loader2, Sun, Moon, User, Phone, MapPin, Github, Linkedin, Twitter, BookOpen, Target, Clock } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Sun, Moon, User, Phone, MapPin, Github, Linkedin, Twitter, BookOpen, Target, Clock, Camera } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import PageTransition from "@/components/PageTransition";
 import { motion, AnimatePresence } from "framer-motion";
