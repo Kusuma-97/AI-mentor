@@ -29,6 +29,7 @@ interface MentorContextType {
   level: Level | null;
   setInterest: (i: Interest) => void;
   setLevel: (l: Level) => void;
+  setPreferences: (i: Interest, l: Level) => void;
   chatMessages: ChatMessage[];
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
   chatsByDomain: Record<string, ChatMessage[]>;
@@ -173,6 +174,17 @@ export function MentorProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user, interest]);
 
+  const setPreferences = useCallback((i: Interest, l: Level) => {
+    setInterestState(i);
+    setLevelState(l);
+    if (user) {
+      supabase.from("user_preferences").upsert(
+        { user_id: user.id, interest: i, level: l },
+        { onConflict: "user_id" }
+      ).then();
+    }
+  }, [user]);
+
   const setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>> = useCallback(
     (action) => {
       setChatsByDomain((prev) => {
@@ -271,7 +283,7 @@ export function MentorProvider({ children }: { children: React.ReactNode }) {
   return (
     <MentorContext.Provider
       value={{
-        interest, level, setInterest, setLevel,
+        interest, level, setInterest, setLevel, setPreferences,
         chatMessages, setChatMessages, chatsByDomain,
         quizResults, addQuizResult,
         roadmap, setRoadmap, toggleMilestone,

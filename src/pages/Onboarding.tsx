@@ -31,7 +31,7 @@ const fadeUp = {
 };
 
 export default function Onboarding() {
-  const { setInterest, setLevel } = useMentor();
+  const { setInterest, setLevel, setPreferences } = useMentor();
   const { signOut } = useAuth();
   const [selectedInterest, setSelectedInterest] = useState<Interest | null>(null);
   const [selectedLevel, setSelectedLevel] = useState<Level | null>(null);
@@ -46,8 +46,7 @@ export default function Onboarding() {
 
   const handleStart = () => {
     if (!selectedInterest || !selectedLevel) return;
-    setInterest(selectedInterest);
-    setLevel(selectedLevel);
+    setPreferences(selectedInterest, selectedLevel);
     navigate("/dashboard");
   };
 
