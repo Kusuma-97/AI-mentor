@@ -174,6 +174,17 @@ export function MentorProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user, interest]);
 
+  const setPreferences = useCallback((i: Interest, l: Level) => {
+    setInterestState(i);
+    setLevelState(l);
+    if (user) {
+      supabase.from("user_preferences").upsert(
+        { user_id: user.id, interest: i, level: l },
+        { onConflict: "user_id" }
+      ).then();
+    }
+  }, [user]);
+
   const setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>> = useCallback(
     (action) => {
       setChatsByDomain((prev) => {
