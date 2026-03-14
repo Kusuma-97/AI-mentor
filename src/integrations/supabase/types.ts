@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      chat_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          interest: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          interest: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          interest?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           academic_level: string | null
@@ -69,6 +96,120 @@ export type Database = {
           preferred_subjects?: string[] | null
           study_hours_per_week?: number | null
           twitter_url?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      quiz_results: {
+        Row: {
+          created_at: string
+          id: string
+          interest: string | null
+          score: number
+          topic: string
+          total: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          interest?: string | null
+          score: number
+          topic: string
+          total: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          interest?: string | null
+          score?: number
+          topic?: string
+          total?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      roadmap_milestones: {
+        Row: {
+          completed: boolean
+          created_at: string
+          description: string
+          id: string
+          interest: string
+          resources: string[]
+          sort_order: number
+          title: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          created_at?: string
+          description?: string
+          id?: string
+          interest: string
+          resources?: string[]
+          sort_order?: number
+          title: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          created_at?: string
+          description?: string
+          id?: string
+          interest?: string
+          resources?: string[]
+          sort_order?: number
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      topics_explored: {
+        Row: {
+          created_at: string
+          id: string
+          topic: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          topic: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          topic?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_preferences: {
+        Row: {
+          created_at: string
+          id: string
+          interest: string
+          level: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          interest: string
+          level: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          interest?: string
+          level?: string
           updated_at?: string
           user_id?: string
         }
