@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth-context";
 
 export type Interest = "Web Development" | "Data Science" | "Machine Learning" | "UI/UX Design" | "Mobile Development" | "Cybersecurity";
 export type Level = "Beginner" | "Intermediate" | "Advanced";
@@ -37,48 +39,234 @@ interface MentorContextType {
   toggleMilestone: (index: number) => void;
   topicsExplored: string[];
   addTopic: (t: string) => void;
+  dataLoading: boolean;
 }
 
 const MentorContext = createContext<MentorContextType | null>(null);
 
 export function MentorProvider({ children }: { children: React.ReactNode }) {
-  const [interest, setInterest] = useState<Interest | null>(null);
-  const [level, setLevel] = useState<Level | null>(null);
+  const { user } = useAuth();
+  const [interest, setInterestState] = useState<Interest | null>(null);
+  const [level, setLevelState] = useState<Level | null>(null);
   const [chatsByDomain, setChatsByDomain] = useState<Record<string, ChatMessage[]>>({});
   const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
   const [roadmapsByDomain, setRoadmapsByDomain] = useState<Record<string, RoadmapMilestone[]>>({});
   const [topicsExplored, setTopicsExplored] = useState<string[]>([]);
+  const [dataLoading, setDataLoading] = useState(true);
+
   const domainKey = interest ?? "";
   const roadmap = roadmapsByDomain[domainKey] ?? [];
-  const setRoadmap = useCallback((r: RoadmapMilestone[]) => {
-    setRoadmapsByDomain((prev) => ({ ...prev, [domainKey]: r }));
-  }, [domainKey]);
   const chatMessages = chatsByDomain[domainKey] ?? [];
+
+  // Load all user data from DB on login
+  useEffect(() => {
+    if (!user) {
+      setDataLoading(false);
+      return;
+    }
+
+    const loadData = async () => {
+      setDataLoading(true);
+      try {
+        // Load preferences
+        const { data: prefs } = await supabase
+          .from("user_preferences")
+          .select("*")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (prefs) {
+          setInterestState(prefs.interest as Interest);
+          setLevelState(prefs.level as Level);
+        }
+
+        // Load quiz results
+        const { data: quizzes } = await supabase
+          .from("quiz_results")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: true });
+
+        if (quizzes) {
+          setQuizResults(quizzes.map(q => ({
+            topic: q.topic,
+            score: q.score,
+            total: q.total,
+            timestamp: new Date(q.created_at).getTime(),
+          })));
+        }
+
+        // Load roadmap milestones grouped by interest
+        const { data: milestones } = await supabase
+          .from("roadmap_milestones")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("sort_order", { ascending: true });
+
+        if (milestones) {
+          const grouped: Record<string, RoadmapMilestone[]> = {};
+          milestones.forEach(m => {
+            if (!grouped[m.interest]) grouped[m.interest] = [];
+            grouped[m.interest].push({
+              title: m.title,
+              description: m.description,
+              resources: m.resources ?? [],
+              completed: m.completed ?? false,
+            });
+          });
+          setRoadmapsByDomain(grouped);
+        }
+
+        // Load chat messages grouped by interest
+        const { data: msgs } = await supabase
+          .from("chat_messages")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: true });
+
+        if (msgs) {
+          const grouped: Record<string, ChatMessage[]> = {};
+          msgs.forEach(m => {
+            if (!grouped[m.interest]) grouped[m.interest] = [];
+            grouped[m.interest].push({ role: m.role as "user" | "assistant", content: m.content });
+          });
+          setChatsByDomain(grouped);
+        }
+
+        // Load topics explored
+        const { data: topics } = await supabase
+          .from("topics_explored")
+          .select("*")
+          .eq("user_id", user.id);
+
+        if (topics) {
+          setTopicsExplored(topics.map(t => t.topic));
+        }
+      } catch (err) {
+        console.error("Failed to load mentor data:", err);
+      } finally {
+        setDataLoading(false);
+      }
+    };
+
+    loadData();
+  }, [user]);
+
+  // Save preferences to DB
+  const setInterest = useCallback((i: Interest) => {
+    setInterestState(i);
+    if (user) {
+      supabase.from("user_preferences").upsert(
+        { user_id: user.id, interest: i, level: level ?? "Beginner" },
+        { onConflict: "user_id" }
+      ).then();
+    }
+  }, [user, level]);
+
+  const setLevel = useCallback((l: Level) => {
+    setLevelState(l);
+    if (user) {
+      supabase.from("user_preferences").upsert(
+        { user_id: user.id, interest: interest ?? "", level: l },
+        { onConflict: "user_id" }
+      ).then();
+    }
+  }, [user, interest]);
+
   const setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>> = useCallback(
     (action) => {
       setChatsByDomain((prev) => {
         const current = prev[domainKey] ?? [];
         const next = typeof action === "function" ? action(current) : action;
+
+        // Save new messages to DB
+        if (user && domainKey && next.length > current.length) {
+          const newMsgs = next.slice(current.length);
+          newMsgs.forEach(msg => {
+            supabase.from("chat_messages").insert({
+              user_id: user.id,
+              interest: domainKey,
+              role: msg.role,
+              content: msg.content,
+            }).then();
+          });
+        }
+
         return { ...prev, [domainKey]: next };
       });
     },
-    [domainKey]
+    [domainKey, user]
   );
 
   const addQuizResult = useCallback((r: QuizResult) => {
     setQuizResults((prev) => [...prev, r]);
-  }, []);
+    if (user) {
+      supabase.from("quiz_results").insert({
+        user_id: user.id,
+        topic: r.topic,
+        score: r.score,
+        total: r.total,
+        interest: interest,
+      }).then();
+    }
+  }, [user, interest]);
+
+  const setRoadmap = useCallback((r: RoadmapMilestone[]) => {
+    setRoadmapsByDomain((prev) => ({ ...prev, [domainKey]: r }));
+    if (user && domainKey) {
+      // Delete existing milestones for this interest and insert new ones
+      supabase.from("roadmap_milestones")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("interest", domainKey)
+        .then(() => {
+          const rows = r.map((m, i) => ({
+            user_id: user.id,
+            interest: domainKey,
+            title: m.title,
+            description: m.description,
+            resources: m.resources,
+            completed: m.completed,
+            sort_order: i,
+          }));
+          if (rows.length > 0) {
+            supabase.from("roadmap_milestones").insert(rows).then();
+          }
+        });
+    }
+  }, [domainKey, user]);
 
   const toggleMilestone = useCallback((index: number) => {
     setRoadmapsByDomain((prev) => {
       const current = prev[domainKey] ?? [];
-      return { ...prev, [domainKey]: current.map((m, i) => (i === index ? { ...m, completed: !m.completed } : m)) };
+      const updated = current.map((m, i) => (i === index ? { ...m, completed: !m.completed } : m));
+
+      // Update in DB
+      if (user && domainKey) {
+        supabase.from("roadmap_milestones")
+          .update({ completed: updated[index].completed })
+          .eq("user_id", user.id)
+          .eq("interest", domainKey)
+          .eq("sort_order", index)
+          .then();
+      }
+
+      return { ...prev, [domainKey]: updated };
     });
-  }, [domainKey]);
+  }, [domainKey, user]);
 
   const addTopic = useCallback((t: string) => {
-    setTopicsExplored((prev) => (prev.includes(t) ? prev : [...prev, t]));
-  }, []);
+    setTopicsExplored((prev) => {
+      if (prev.includes(t)) return prev;
+      if (user) {
+        supabase.from("topics_explored").insert({
+          user_id: user.id,
+          topic: t,
+        }).then();
+      }
+      return [...prev, t];
+    });
+  }, [user]);
 
   return (
     <MentorContext.Provider
@@ -88,6 +276,7 @@ export function MentorProvider({ children }: { children: React.ReactNode }) {
         quizResults, addQuizResult,
         roadmap, setRoadmap, toggleMilestone,
         topicsExplored, addTopic,
+        dataLoading,
       }}
     >
       {children}
