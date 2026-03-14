@@ -283,7 +283,7 @@ export function MentorProvider({ children }: { children: React.ReactNode }) {
   return (
     <MentorContext.Provider
       value={{
-        interest, level, setInterest, setLevel,
+        interest, level, setInterest, setLevel, setPreferences,
         chatMessages, setChatMessages, chatsByDomain,
         quizResults, addQuizResult,
         roadmap, setRoadmap, toggleMilestone,
