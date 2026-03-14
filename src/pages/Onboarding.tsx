@@ -46,8 +46,7 @@ export default function Onboarding() {
 
   const handleStart = () => {
     if (!selectedInterest || !selectedLevel) return;
-    setInterest(selectedInterest);
-    setLevel(selectedLevel);
+    setPreferences(selectedInterest, selectedLevel);
     navigate("/dashboard");
   };
 
