@@ -29,6 +29,7 @@ interface MentorContextType {
   level: Level | null;
   setInterest: (i: Interest) => void;
   setLevel: (l: Level) => void;
+  setPreferences: (i: Interest, l: Level) => void;
   chatMessages: ChatMessage[];
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
   chatsByDomain: Record<string, ChatMessage[]>;
