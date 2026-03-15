@@ -166,7 +166,7 @@ export default function Leaderboard() {
                             )}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            {entry.total_quizzes} quiz{entry.total_quizzes !== 1 ? "zes" : ""} completed
+                            {entry.interest} · {entry.level} · {entry.total_quizzes} quiz{entry.total_quizzes !== 1 ? "zes" : ""}
                           </p>
                         </div>
 
