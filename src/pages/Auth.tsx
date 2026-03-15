@@ -43,7 +43,7 @@ export default function Auth() {
         await signUp(email, password, displayName);
         toast.success("Account created! You're now signed in.");
       }
-      navigate("/");
+      navigate("/onboarding");
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Authentication failed");
     } finally {
