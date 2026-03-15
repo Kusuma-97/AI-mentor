@@ -15,6 +15,8 @@ interface LeaderboardEntry {
   user_id: string;
   display_name: string;
   avatar_url: string | null;
+  interest: string;
+  level: string;
   total_quizzes: number;
   total_score: number;
   total_possible: number;
