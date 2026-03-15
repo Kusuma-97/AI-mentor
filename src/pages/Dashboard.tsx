@@ -28,7 +28,7 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    if (!interest || !level) navigate("/");
+    if (!interest || !level) navigate("/onboarding");
   }, [interest, level, navigate]);
 
   if (!interest || !level) return null;
