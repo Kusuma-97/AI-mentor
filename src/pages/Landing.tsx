@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Sparkles, Brain, Target, BarChart3, MessageCircle, Zap, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Sparkles, Brain, Target, BarChart3, MessageCircle, Zap, ArrowRight, CheckCircle2, Trophy } from "lucide-react";
 import { motion } from "framer-motion";
 import AnimatedBackground from "@/components/AnimatedBackground";
 
@@ -67,10 +67,15 @@ export default function Landing() {
           <span className="text-xl font-bold gradient-text">AI Mentor</span>
         </motion.div>
         <motion.div
+          className="flex items-center gap-3"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
         >
+          <Button variant="ghost" onClick={() => navigate("/leaderboard")} className="gap-1.5 text-muted-foreground hover:text-primary">
+            <Trophy className="h-4 w-4" />
+            Leaderboard
+          </Button>
           <Button variant="outline" onClick={() => navigate("/auth")} className="border-primary/30 hover:border-primary/60">
             Sign In
           </Button>
