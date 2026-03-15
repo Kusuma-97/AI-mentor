@@ -4,7 +4,7 @@ import { useMentor } from "@/lib/mentor-context";
 import { useAuth } from "@/lib/auth-context";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, Map, HelpCircle, BarChart3, Home, User, LogOut, Sun, Moon } from "lucide-react";
+import { MessageSquare, Map, HelpCircle, BarChart3, Home, User, LogOut, Sun, Moon, Trophy } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import ChatTab from "@/components/dashboard/ChatTab";
 import RoadmapTab from "@/components/dashboard/RoadmapTab";
@@ -77,6 +77,14 @@ export default function Dashboard() {
                 </motion.button>
               </TooltipTrigger>
               <TooltipContent>Home</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <motion.button onClick={() => navigate("/leaderboard")} className="text-muted-foreground hover:text-primary transition-colors" whileHover={{ scale: 1.15, rotate: 5 }} whileTap={{ scale: 0.9 }}>
+                  <Trophy className="h-4 w-4" />
+                </motion.button>
+              </TooltipTrigger>
+              <TooltipContent>Leaderboard</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
