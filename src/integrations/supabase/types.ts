@@ -227,6 +227,8 @@ export type Database = {
           avg_score: number
           best_score: number
           display_name: string
+          interest: string
+          level: string
           total_possible: number
           total_quizzes: number
           total_score: number
