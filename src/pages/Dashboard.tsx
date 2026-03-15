@@ -80,6 +80,14 @@ export default function Dashboard() {
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
+                <motion.button onClick={() => navigate("/leaderboard")} className="text-muted-foreground hover:text-primary transition-colors" whileHover={{ scale: 1.15, rotate: 5 }} whileTap={{ scale: 0.9 }}>
+                  <Trophy className="h-4 w-4" />
+                </motion.button>
+              </TooltipTrigger>
+              <TooltipContent>Leaderboard</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
                 <motion.button onClick={() => navigate("/profile")} className="text-muted-foreground hover:text-primary transition-colors" whileHover={{ scale: 1.15, rotate: -5 }} whileTap={{ scale: 0.9 }}>
                   <User className="h-4 w-4" />
                 </motion.button>
