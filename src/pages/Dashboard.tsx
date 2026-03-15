@@ -4,7 +4,7 @@ import { useMentor } from "@/lib/mentor-context";
 import { useAuth } from "@/lib/auth-context";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, Map, HelpCircle, BarChart3, Home, User, LogOut, Sun, Moon } from "lucide-react";
+import { MessageSquare, Map, HelpCircle, BarChart3, Home, User, LogOut, Sun, Moon, Trophy } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import ChatTab from "@/components/dashboard/ChatTab";
 import RoadmapTab from "@/components/dashboard/RoadmapTab";
