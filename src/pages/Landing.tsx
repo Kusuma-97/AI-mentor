@@ -80,7 +80,6 @@ export default function Landing() {
             Sign In
           </Button>
         </motion.div>
-        </motion.div>
       </nav>
 
       {/* Hero */}
