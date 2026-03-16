@@ -17,6 +17,7 @@ interface Question {
 
 export default function QuizTab() {
   const { interest, level, addQuizResult } = useMentor();
+  const { recordQuizCompletion } = useStreaks();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [current, setCurrent] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
