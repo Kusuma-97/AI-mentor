@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, HelpCircle, CheckCircle, XCircle, Trophy } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { useStreaks } from "@/hooks/use-streaks";
 
 interface Question {
   question: string;
