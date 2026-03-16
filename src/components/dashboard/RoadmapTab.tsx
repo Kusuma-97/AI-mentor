@@ -4,9 +4,25 @@ import { invokeFunction } from "@/lib/ai-stream";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, RefreshCw, Map } from "lucide-react";
+import { Loader2, RefreshCw, Map, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+
+function parseResource(resource: string) {
+  // Try "Name | URL" format
+  const pipeMatch = resource.match(/^(.+?)\s*\|\s*(https?:\/\/.+)$/);
+  if (pipeMatch) return { label: pipeMatch[1].trim(), url: pipeMatch[2].trim() };
+  
+  // Try to find a URL anywhere in the string
+  const urlMatch = resource.match(/(https?:\/\/[^\s]+)/);
+  if (urlMatch) {
+    const url = urlMatch[1];
+    const label = resource.replace(url, "").replace(/[-–—|:]\s*$/, "").trim() || url;
+    return { label, url };
+  }
+  
+  return { label: resource, url: null };
+}
 
 export default function RoadmapTab() {
   const { interest, level, roadmap, setRoadmap, toggleMilestone } = useMentor();
@@ -101,10 +117,27 @@ export default function RoadmapTab() {
             {milestone.resources.length > 0 && (
               <CardContent className="pt-0 pl-12">
                 <p className="text-xs font-medium text-primary/70 mb-1">Resources:</p>
-                <ul className="text-sm space-y-0.5">
-                  {milestone.resources.map((r, j) => (
-                    <li key={j} className="text-muted-foreground">• {r}</li>
-                  ))}
+                <ul className="text-sm space-y-1.5">
+                  {milestone.resources.map((r, j) => {
+                    const { label, url } = parseResource(r);
+                    return (
+                      <li key={j}>
+                        {url ? (
+                          <a
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 text-primary hover:text-primary/80 hover:underline transition-colors"
+                          >
+                            <ExternalLink className="h-3 w-3 shrink-0" />
+                            {label}
+                          </a>
+                        ) : (
+                          <span className="text-muted-foreground">• {label}</span>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ul>
               </CardContent>
             )}

@@ -31,11 +31,11 @@ For "${interest}" at "${level}" level:
 - Intermediate: Focus on deeper techniques, real-world projects, common pitfalls, and domain-specific best practices for ${interest}.
 - Advanced: Cover cutting-edge topics, optimization, architecture patterns, research papers, and expert-level challenges unique to ${interest}.
 
-Each milestone must include concrete, actionable resources (specific books, courses, tools, websites) relevant to ${interest}. Never give generic advice like "practice more" — be precise.`,
+Each milestone must include concrete, actionable resources with REAL, WORKING website URLs. Format each resource as "Resource Name | https://actual-url.com". Use well-known, established websites like MDN, freeCodeCamp, Coursera, Udemy, Khan Academy, W3Schools, official documentation sites, GitHub repos, YouTube channels, etc. Never invent fake URLs.`,
           },
           {
             role: "user",
-            content: `Create a detailed, domain-specific learning roadmap for mastering "${interest}" at the "${level}" level. Generate 6-8 milestones. Each milestone should have a clear title, a description explaining what the learner will achieve, and 2-3 specific resources (real tools, courses, books, or websites) tailored to ${interest}.`,
+            content: `Create a detailed, domain-specific learning roadmap for mastering "${interest}" at the "${level}" level. Generate 6-8 milestones. Each milestone should have a clear title, a description explaining what the learner will achieve, and 2-3 specific resources with REAL website links. Format each resource as "Resource Name | https://url.com". Use only real, well-known websites.`,
           },
         ],
         tools: [
