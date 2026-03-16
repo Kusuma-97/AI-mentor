@@ -5,6 +5,8 @@ import { BarChart3, Target, BookOpen, CheckCircle } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 import { motion } from "framer-motion";
+import { useStreaks } from "@/hooks/use-streaks";
+import StreakBadges from "@/components/dashboard/StreakBadges";
 
 export default function ProgressTab() {
   const { quizResults, roadmap, topicsExplored } = useMentor();
