@@ -57,6 +57,12 @@ export default function QuizTab() {
       const finalScore = selected === questions[current].correct ? score + 0 : score;
       setFinished(true);
       addQuizResult({ topic, score: finalScore || score, total: questions.length, timestamp: Date.now() });
+      // Record streak and check for new badges
+      recordQuizCompletion().then((newBadges) => {
+        if (newBadges && newBadges.length > 0) {
+          toast.success("🏆 New badge earned!", { description: `You unlocked ${newBadges.length} badge(s)!` });
+        }
+      });
     }
   };
 
