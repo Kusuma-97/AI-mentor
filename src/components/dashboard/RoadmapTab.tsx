@@ -117,10 +117,27 @@ export default function RoadmapTab() {
             {milestone.resources.length > 0 && (
               <CardContent className="pt-0 pl-12">
                 <p className="text-xs font-medium text-primary/70 mb-1">Resources:</p>
-                <ul className="text-sm space-y-0.5">
-                  {milestone.resources.map((r, j) => (
-                    <li key={j} className="text-muted-foreground">• {r}</li>
-                  ))}
+                <ul className="text-sm space-y-1.5">
+                  {milestone.resources.map((r, j) => {
+                    const { label, url } = parseResource(r);
+                    return (
+                      <li key={j}>
+                        {url ? (
+                          <a
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 text-primary hover:text-primary/80 hover:underline transition-colors"
+                          >
+                            <ExternalLink className="h-3 w-3 shrink-0" />
+                            {label}
+                          </a>
+                        ) : (
+                          <span className="text-muted-foreground">• {label}</span>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ul>
               </CardContent>
             )}
