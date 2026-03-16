@@ -131,6 +131,11 @@ export default function ProgressTab() {
           </Card>
         )}
       </motion.div>
+
+      {/* Streaks & Badges */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.4 }}>
+        <StreakBadges currentStreak={currentStreak} longestStreak={longestStreak} earnedBadges={earnedBadges} />
+      </motion.div>
     </div>
   );
 }
