@@ -5,9 +5,12 @@ import { BarChart3, Target, BookOpen, CheckCircle } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 import { motion } from "framer-motion";
+import { useStreaks } from "@/hooks/use-streaks";
+import StreakBadges from "@/components/dashboard/StreakBadges";
 
 export default function ProgressTab() {
   const { quizResults, roadmap, topicsExplored } = useMentor();
+  const { currentStreak, longestStreak, earnedBadges } = useStreaks();
 
   const totalQuizzes = quizResults.length;
   const avgAccuracy = totalQuizzes > 0
@@ -127,6 +130,11 @@ export default function ProgressTab() {
             <p className="text-muted-foreground">Take a quiz to see your performance chart here.</p>
           </Card>
         )}
+      </motion.div>
+
+      {/* Streaks & Badges */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.4 }}>
+        <StreakBadges currentStreak={currentStreak} longestStreak={longestStreak} earnedBadges={earnedBadges} />
       </motion.div>
     </div>
   );

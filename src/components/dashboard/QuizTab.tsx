@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, HelpCircle, CheckCircle, XCircle, Trophy } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { useStreaks } from "@/hooks/use-streaks";
 
 interface Question {
   question: string;
@@ -16,6 +17,7 @@ interface Question {
 
 export default function QuizTab() {
   const { interest, level, addQuizResult } = useMentor();
+  const { recordQuizCompletion } = useStreaks();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [current, setCurrent] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
@@ -55,6 +57,12 @@ export default function QuizTab() {
       const finalScore = selected === questions[current].correct ? score + 0 : score;
       setFinished(true);
       addQuizResult({ topic, score: finalScore || score, total: questions.length, timestamp: Date.now() });
+      // Record streak and check for new badges
+      recordQuizCompletion().then((newBadges) => {
+        if (newBadges && newBadges.length > 0) {
+          toast.success("🏆 New badge earned!", { description: `You unlocked ${newBadges.length} badge(s)!` });
+        }
+      });
     }
   };
 
