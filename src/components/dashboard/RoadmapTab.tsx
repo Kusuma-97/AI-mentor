@@ -8,11 +8,48 @@ import { Loader2, RefreshCw, Map, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
+const KNOWN_SITES: Record<string, string> = {
+  "mdn": "https://developer.mozilla.org",
+  "mdn web docs": "https://developer.mozilla.org",
+  "freecodecamp": "https://www.freecodecamp.org",
+  "free code camp": "https://www.freecodecamp.org",
+  "w3schools": "https://www.w3schools.com",
+  "coursera": "https://www.coursera.org",
+  "udemy": "https://www.udemy.com",
+  "khan academy": "https://www.khanacademy.org",
+  "codecademy": "https://www.codecademy.com",
+  "leetcode": "https://leetcode.com",
+  "hackerrank": "https://www.hackerrank.com",
+  "github": "https://github.com",
+  "stack overflow": "https://stackoverflow.com",
+  "stackoverflow": "https://stackoverflow.com",
+  "kaggle": "https://www.kaggle.com",
+  "pluralsight": "https://www.pluralsight.com",
+  "edx": "https://www.edx.org",
+  "youtube": "https://www.youtube.com",
+  "css tricks": "https://css-tricks.com",
+  "css-tricks": "https://css-tricks.com",
+  "smashing magazine": "https://www.smashingmagazine.com",
+  "digital ocean": "https://www.digitalocean.com/community/tutorials",
+  "digitalocean": "https://www.digitalocean.com/community/tutorials",
+  "geeksforgeeks": "https://www.geeksforgeeks.org",
+  "tensorflow": "https://www.tensorflow.org",
+  "pytorch": "https://pytorch.org",
+  "scikit-learn": "https://scikit-learn.org",
+  "react": "https://react.dev",
+  "vue": "https://vuejs.org",
+  "angular": "https://angular.dev",
+  "node.js": "https://nodejs.org",
+  "python": "https://docs.python.org",
+  "rust": "https://doc.rust-lang.org/book/",
+  "owasp": "https://owasp.org",
+};
+
 function parseResource(resource: string) {
   // Try "Name | URL" format
   const pipeMatch = resource.match(/^(.+?)\s*\|\s*(https?:\/\/.+)$/);
   if (pipeMatch) return { label: pipeMatch[1].trim(), url: pipeMatch[2].trim() };
-  
+
   // Try to find a URL anywhere in the string
   const urlMatch = resource.match(/(https?:\/\/[^\s]+)/);
   if (urlMatch) {
@@ -20,8 +57,17 @@ function parseResource(resource: string) {
     const label = resource.replace(url, "").replace(/[-–—|:]\s*$/, "").trim() || url;
     return { label, url };
   }
-  
-  return { label: resource, url: null };
+
+  // Match against known sites
+  const lower = resource.toLowerCase();
+  for (const [key, url] of Object.entries(KNOWN_SITES)) {
+    if (lower.includes(key)) {
+      return { label: resource, url };
+    }
+  }
+
+  // Fallback: Google search link
+  return { label: resource, url: `https://www.google.com/search?q=${encodeURIComponent(resource)}` };
 }
 
 export default function RoadmapTab() {
