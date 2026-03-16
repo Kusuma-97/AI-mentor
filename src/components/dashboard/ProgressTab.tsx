@@ -10,6 +10,7 @@ import StreakBadges from "@/components/dashboard/StreakBadges";
 
 export default function ProgressTab() {
   const { quizResults, roadmap, topicsExplored } = useMentor();
+  const { currentStreak, longestStreak, earnedBadges } = useStreaks();
 
   const totalQuizzes = quizResults.length;
   const avgAccuracy = totalQuizzes > 0
