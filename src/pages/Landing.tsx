@@ -1,9 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Sparkles, Brain, Target, BarChart3, MessageCircle, Zap, ArrowRight, CheckCircle2, Trophy } from "lucide-react";
+import { Brain, Target, BarChart3, MessageCircle, Zap, ArrowRight, CheckCircle2, Trophy } from "lucide-react";
 import { motion } from "framer-motion";
 import AnimatedBackground from "@/components/AnimatedBackground";
+import logo from "/logo.png";
 
 const features = [
   {
@@ -63,7 +64,7 @@ export default function Landing() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <Sparkles className="h-6 w-6 text-primary" />
+          <img src={logo} alt="AI Mentor logo" className="h-8 w-8" />
           <span className="text-xl font-bold gradient-text">AI Mentor</span>
         </motion.div>
         <motion.div
@@ -94,11 +95,11 @@ export default function Landing() {
           className="max-w-3xl"
         >
           <motion.div
-            className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl gradient-primary glow-md"
+            className="mx-auto mb-6"
             animate={{ rotate: [0, 8, -8, 0] }}
             transition={{ duration: 4, repeat: Infinity, repeatDelay: 2 }}
           >
-            <Sparkles className="h-8 w-8 text-primary-foreground" />
+            <img src={logo} alt="AI Mentor" className="h-16 w-16" />
           </motion.div>
 
           <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl">
