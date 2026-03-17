@@ -72,6 +72,9 @@ export default function Landing() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
         >
+          <Button variant="ghost" onClick={() => navigate("/about")} className="text-muted-foreground hover:text-primary">
+            About
+          </Button>
           <Button variant="ghost" onClick={() => navigate("/leaderboard")} className="gap-1.5 text-muted-foreground hover:text-primary">
             <Trophy className="h-4 w-4" />
             Leaderboard
