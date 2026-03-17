@@ -95,11 +95,11 @@ export default function Landing() {
           className="max-w-3xl"
         >
           <motion.div
-            className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl gradient-primary glow-md"
+            className="mx-auto mb-6"
             animate={{ rotate: [0, 8, -8, 0] }}
             transition={{ duration: 4, repeat: Infinity, repeatDelay: 2 }}
           >
-            <Sparkles className="h-8 w-8 text-primary-foreground" />
+            <img src={logo} alt="AI Mentor" className="h-16 w-16" />
           </motion.div>
 
           <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl">
