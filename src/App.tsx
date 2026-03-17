@@ -10,6 +10,7 @@ import { AnimatePresence } from "framer-motion";
 import { Loader2 } from "lucide-react";
 
 const Landing = lazy(() => import("./pages/Landing"));
+const About = lazy(() => import("./pages/About"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Profile = lazy(() => import("./pages/Profile"));
