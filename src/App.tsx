@@ -40,6 +40,7 @@ function AnimatedRoutes() {
       <Suspense fallback={<PageLoader />}>
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<Landing />} />
+          <Route path="/about" element={<About />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
