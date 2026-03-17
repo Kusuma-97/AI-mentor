@@ -64,7 +64,7 @@ export default function Landing() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <Sparkles className="h-6 w-6 text-primary" />
+          <img src={logo} alt="AI Mentor logo" className="h-8 w-8" />
           <span className="text-xl font-bold gradient-text">AI Mentor</span>
         </motion.div>
         <motion.div
