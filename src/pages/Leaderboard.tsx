@@ -10,6 +10,7 @@ import { Trophy, Medal, Award, ArrowLeft, Crown, Target, Zap, Loader2 } from "lu
 import { motion } from "framer-motion";
 import PageTransition from "@/components/PageTransition";
 import AnimatedBackground from "@/components/AnimatedBackground";
+import logo from "/logo.png";
 
 interface LeaderboardEntry {
   user_id: string;
@@ -71,6 +72,7 @@ export default function Leaderboard() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="flex items-center gap-2">
+              <img src={logo} alt="AI Mentor" className="h-7 w-7" />
               <Trophy className="h-6 w-6 text-primary" />
               <h1 className="text-2xl font-bold gradient-text">Leaderboard</h1>
             </div>
