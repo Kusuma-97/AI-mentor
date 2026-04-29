@@ -9,6 +9,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import PageTransition from "@/components/PageTransition";
 import { motion, AnimatePresence } from "framer-motion";
 import AnimatedBackground from "@/components/AnimatedBackground";
+import logo from "/logo.png";
 
 const interests: { label: Interest; icon: React.ElementType; desc: string; color: string }[] = [
   { label: "Web Development", icon: Code, desc: "HTML, CSS, JS, React & more", color: "250 76% 58%" },
@@ -107,7 +108,7 @@ export default function Onboarding() {
               animate={{ rotate: [0, 15, -15, 0], scale: [1, 1.2, 1] }}
               transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
             >
-              <Sparkles className="h-9 w-9 text-primary" />
+              <img src={logo} alt="AI Mentor" className="h-12 w-12" />
             </motion.div>
             <motion.h1
               className="text-5xl font-extrabold tracking-tight gradient-text"

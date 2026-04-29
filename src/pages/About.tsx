@@ -10,6 +10,7 @@ import {
 import { motion } from "framer-motion";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import PageTransition from "@/components/PageTransition";
+import logo from "/logo.png";
 
 const benefits = [
   { icon: Target, title: "Personalized Learning", desc: "Content adapts to your chosen interest and skill level — no generic courses." },
@@ -48,7 +49,7 @@ export default function About() {
         <nav className="relative z-10 flex items-center justify-between px-6 py-4 md:px-12">
           <button onClick={() => navigate("/")} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="h-4 w-4" />
-            <Sparkles className="h-5 w-5 text-primary" />
+            <img src={logo} alt="AI Mentor" className="h-6 w-6" />
             <span className="font-bold gradient-text">AI Mentor</span>
           </button>
           <Button variant="outline" onClick={() => navigate("/auth")} className="border-primary/30 hover:border-primary/60">

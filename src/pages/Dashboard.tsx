@@ -45,12 +45,13 @@ export default function Dashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          <motion.h1
-            className="text-xl font-bold gradient-text"
+          <motion.div
+            className="flex items-center gap-2"
             whileHover={{ scale: 1.03 }}
           >
-            AI Mentor
-          </motion.h1>
+            <img src="/logo.png" alt="AI Mentor" className="h-7 w-7" />
+            <h1 className="text-xl font-bold gradient-text">AI Mentor</h1>
+          </motion.div>
           <div className="flex items-center gap-2">
             <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }}>
               <Badge className="gradient-primary text-primary-foreground border-0">{interest}</Badge>

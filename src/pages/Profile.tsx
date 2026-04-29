@@ -13,6 +13,7 @@ import { ArrowLeft, Save, Loader2, Sun, Moon, User, Phone, MapPin, Github, Linke
 import { useToast } from "@/hooks/use-toast";
 import PageTransition from "@/components/PageTransition";
 import { motion, AnimatePresence } from "framer-motion";
+import logo from "/logo.png";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Separator } from "@/components/ui/separator";
@@ -199,6 +200,7 @@ export default function Profile() {
           >
             <ArrowLeft className="h-5 w-5" />
           </motion.button>
+          <img src={logo} alt="AI Mentor" className="h-7 w-7" />
           <h1 className="text-xl font-bold gradient-text">My Profile</h1>
           <div className="ml-auto">
             <Tooltip>

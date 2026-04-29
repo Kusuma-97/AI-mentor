@@ -5,11 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Sparkles, Loader2, Sun, Moon } from "lucide-react";
+import { Loader2, Sun, Moon } from "lucide-react";
 import { toast } from "sonner";
 import PageTransition from "@/components/PageTransition";
 import { motion, AnimatePresence } from "framer-motion";
 import AnimatedBackground from "@/components/AnimatedBackground";
+import logo from "/logo.png";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -87,7 +88,7 @@ export default function Auth() {
               animate={{ rotate: [0, 15, -15, 0] }}
               transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
             >
-              <Sparkles className="h-8 w-8 text-primary" />
+              <img src={logo} alt="AI Mentor" className="h-10 w-10" />
             </motion.div>
             <h1 className="text-3xl font-bold tracking-tight gradient-text">AI Mentor</h1>
           </motion.div>
