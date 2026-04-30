@@ -118,7 +118,9 @@ export default function RoadmapTab() {
   }
 
   const completed = roadmap.filter((m) => m.completed).length;
-  const progress = Math.round((completed / roadmap.length) * 100);
+  const progress = roadmap.length > 0
+    ? Math.round(roadmap.reduce((s, m) => s + (m.progress ?? 0), 0) / roadmap.length)
+    : 0;
 
   return (
     <div className="space-y-4">
