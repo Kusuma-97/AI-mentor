@@ -368,7 +368,7 @@ export function MentorProvider({ children }: { children: React.ReactNode }) {
         interest, level, setInterest, setLevel, setPreferences,
         chatMessages, setChatMessages, chatsByDomain,
         quizResults, addQuizResult,
-        roadmap, setRoadmap, toggleMilestone,
+        roadmap, setRoadmap, toggleMilestone, setMilestoneProgress,
         topicsExplored, addTopic,
         dataLoading,
       }}
