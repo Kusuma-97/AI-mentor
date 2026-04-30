@@ -212,30 +212,29 @@ export function MentorProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user]);
 
+  // Pure in-memory updates only — persistence happens via persistChatMessage
   const setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>> = useCallback(
     (action) => {
       setChatsByDomain((prev) => {
         const current = prev[domainKey] ?? [];
         const next = typeof action === "function" ? action(current) : action;
-
-        // Save new messages to DB
-        if (user && domainKey && next.length > current.length) {
-          const newMsgs = next.slice(current.length);
-          newMsgs.forEach(msg => {
-            supabase.from("chat_messages").insert({
-              user_id: user.id,
-              interest: domainKey,
-              role: msg.role,
-              content: msg.content,
-            }).then();
-          });
-        }
-
         return { ...prev, [domainKey]: next };
       });
     },
-    [domainKey, user]
+    [domainKey]
   );
+
+  const persistChatMessage = useCallback((msg: ChatMessage) => {
+    if (!user || !domainKey) return;
+    supabase.from("chat_messages").insert({
+      user_id: user.id,
+      interest: domainKey,
+      role: msg.role,
+      content: msg.content,
+    }).then(({ error }) => {
+      if (error) console.error("Failed to persist chat message:", error);
+    });
+  }, [user, domainKey]);
 
   const addQuizResult = useCallback((r: QuizResult) => {
     setQuizResults((prev) => [...prev, r]);
