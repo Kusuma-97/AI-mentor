@@ -6,12 +6,14 @@ export async function streamChat({
   endpoint,
   messages,
   extra,
+  signal,
   onDelta,
   onDone,
 }: {
   endpoint: string;
   messages?: Msg[];
   extra?: Record<string, unknown>;
+  signal?: AbortSignal;
   onDelta: (text: string) => void;
   onDone: () => void;
 }) {
@@ -22,6 +24,7 @@ export async function streamChat({
       Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
     },
     body: JSON.stringify({ messages, ...extra }),
+    signal,
   });
 
   if (!resp.ok) {
@@ -40,30 +43,35 @@ export async function streamChat({
   const decoder = new TextDecoder();
   let buffer = "";
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
+  try {
+    while (true) {
+      if (signal?.aborted) { try { await reader.cancel(); } catch {} ; throw new DOMException("Aborted", "AbortError"); }
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
 
-    let idx: number;
-    while ((idx = buffer.indexOf("\n")) !== -1) {
-      let line = buffer.slice(0, idx);
-      buffer = buffer.slice(idx + 1);
-      if (line.endsWith("\r")) line = line.slice(0, -1);
-      if (!line.startsWith("data: ")) continue;
-      const json = line.slice(6).trim();
-      if (json === "[DONE]") { onDone(); return; }
-      try {
-        const parsed = JSON.parse(json);
-        const content = parsed.choices?.[0]?.delta?.content;
-        if (content) onDelta(content);
-      } catch {
-        buffer = line + "\n" + buffer;
-        break;
+      let idx: number;
+      while ((idx = buffer.indexOf("\n")) !== -1) {
+        let line = buffer.slice(0, idx);
+        buffer = buffer.slice(idx + 1);
+        if (line.endsWith("\r")) line = line.slice(0, -1);
+        if (!line.startsWith("data: ")) continue;
+        const json = line.slice(6).trim();
+        if (json === "[DONE]") { onDone(); return; }
+        try {
+          const parsed = JSON.parse(json);
+          const content = parsed.choices?.[0]?.delta?.content;
+          if (content) onDelta(content);
+        } catch {
+          buffer = line + "\n" + buffer;
+          break;
+        }
       }
     }
+    onDone();
+  } finally {
+    try { reader.releaseLock(); } catch {}
   }
-  onDone();
 }
 
 export async function invokeFunction<T = unknown>(
