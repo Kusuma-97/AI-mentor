@@ -17,6 +17,7 @@ export interface RoadmapMilestone {
   description: string;
   resources: string[];
   completed: boolean;
+  progress: number; // 0–100
 }
 
 export interface ChatMessage {
