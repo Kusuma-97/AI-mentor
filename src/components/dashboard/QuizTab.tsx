@@ -120,14 +120,25 @@ export default function QuizTab() {
               <HelpCircle className="h-14 w-14 text-primary mx-auto mb-4" />
             </motion.div>
             <h2 className="text-2xl font-bold gradient-text mb-2">Test Your Knowledge</h2>
-            <p className="text-muted-foreground mb-6">AI-generated quiz on <span className="text-primary font-medium">{interest}</span> for <span className="text-primary font-medium">{level}</span> level.</p>
+            <p className="text-muted-foreground mb-6">
+              {activeMilestone ? (
+                <>Quiz for module: <span className="text-primary font-medium">{activeMilestone.title}</span></>
+              ) : (
+                <>AI-generated quiz on <span className="text-primary font-medium">{interest}</span> for <span className="text-primary font-medium">{level}</span> level.</>
+              )}
+            </p>
           </>
         )}
-        <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-          <Button onClick={generate} disabled={loading} className="gradient-primary text-primary-foreground px-8">
+        <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex gap-2 justify-center flex-wrap">
+          <Button onClick={() => generate(activeMilestone)} disabled={loading} className="gradient-primary text-primary-foreground px-8">
             {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-            {finished ? "New Quiz" : "Start Quiz"}
+            {finished ? (activeMilestone ? "Retake Module Quiz" : "New Quiz") : "Start Quiz"}
           </Button>
+          {activeMilestone && (
+            <Button variant="outline" onClick={() => { setActiveMilestone(null); generate(null); }} disabled={loading}>
+              General Quiz
+            </Button>
+          )}
         </motion.div>
       </motion.div>
     );
