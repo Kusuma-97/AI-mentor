@@ -15,11 +15,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import AnimatedBackground from "@/components/AnimatedBackground";
 
 export default function Dashboard() {
-  const { interest, level } = useMentor();
+  const { interest, level, pendingQuizMilestone } = useMentor();
   const { signOut } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("chat");
   const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
+
+  useEffect(() => {
+    if (pendingQuizMilestone) setActiveTab("quiz");
+  }, [pendingQuizMilestone]);
 
   const toggleTheme = () => {
     const next = !dark;
