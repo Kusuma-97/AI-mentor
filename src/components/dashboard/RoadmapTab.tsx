@@ -176,6 +176,15 @@ export default function RoadmapTab() {
                   step={5}
                 />
               </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10"
+                onClick={() => requestMilestoneQuiz({ index: i, title: milestone.title, description: milestone.description })}
+              >
+                <HelpCircle className="h-3.5 w-3.5" />
+                Take Module Quiz
+              </Button>
             </CardContent>
             {milestone.resources.length > 0 && (
               <CardContent className="pt-0 pl-12">
