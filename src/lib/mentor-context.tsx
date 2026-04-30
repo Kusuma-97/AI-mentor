@@ -379,6 +379,7 @@ export function MentorProvider({ children }: { children: React.ReactNode }) {
         quizResults, addQuizResult,
         roadmap, setRoadmap, toggleMilestone, setMilestoneProgress,
         topicsExplored, addTopic,
+        pendingQuizMilestone, requestMilestoneQuiz, clearPendingQuizMilestone,
         dataLoading,
       }}
     >
