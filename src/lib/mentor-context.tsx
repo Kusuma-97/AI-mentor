@@ -100,21 +100,36 @@ export function MentorProvider({ children }: { children: React.ReactNode }) {
         }
 
         // Load roadmap milestones grouped by interest
-        const { data: milestones } = await supabase
-          .from("roadmap_milestones")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("sort_order", { ascending: true });
+        const [{ data: milestones }, { data: progressRows }] = await Promise.all([
+          supabase
+            .from("roadmap_milestones")
+            .select("*")
+            .eq("user_id", user.id)
+            .order("sort_order", { ascending: true }),
+          supabase
+            .from("milestone_progress")
+            .select("interest, sort_order, progress")
+            .eq("user_id", user.id),
+        ]);
 
         if (milestones) {
+          const progressMap = new Map<string, number>();
+          (progressRows ?? []).forEach((p: any) => {
+            progressMap.set(`${p.interest}::${p.sort_order}`, p.progress);
+          });
+
           const grouped: Record<string, RoadmapMilestone[]> = {};
-          milestones.forEach(m => {
+          milestones.forEach((m: any) => {
             if (!grouped[m.interest]) grouped[m.interest] = [];
+            const idx = grouped[m.interest].length;
+            const stored = progressMap.get(`${m.interest}::${idx}`);
+            const completed = m.completed ?? false;
             grouped[m.interest].push({
               title: m.title,
               description: m.description,
               resources: m.resources ?? [],
-              completed: m.completed ?? false,
+              completed,
+              progress: stored ?? (completed ? 100 : 0),
             });
           });
           setRoadmapsByDomain(grouped);
