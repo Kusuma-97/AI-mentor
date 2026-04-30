@@ -39,6 +39,7 @@ interface MentorContextType {
   roadmap: RoadmapMilestone[];
   setRoadmap: (r: RoadmapMilestone[]) => void;
   toggleMilestone: (index: number) => void;
+  setMilestoneProgress: (index: number, progress: number) => void;
   topicsExplored: string[];
   addTopic: (t: string) => void;
   dataLoading: boolean;
