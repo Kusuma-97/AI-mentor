@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useMentor } from "@/lib/mentor-context";
 import { invokeFunction } from "@/lib/ai-stream";
 import { Button } from "@/components/ui/button";
@@ -15,8 +15,14 @@ interface Question {
   explanation: string;
 }
 
+interface MilestoneCtx {
+  index: number;
+  title: string;
+  description: string;
+}
+
 export default function QuizTab() {
-  const { interest, level, addQuizResult } = useMentor();
+  const { interest, level, addQuizResult, pendingQuizMilestone, clearPendingQuizMilestone } = useMentor();
   const { recordQuizCompletion } = useStreaks();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [current, setCurrent] = useState(0);
@@ -25,23 +31,40 @@ export default function QuizTab() {
   const [finished, setFinished] = useState(false);
   const [loading, setLoading] = useState(false);
   const [topic, setTopic] = useState("");
+  const [activeMilestone, setActiveMilestone] = useState<MilestoneCtx | null>(null);
+  const lastHandled = useRef<string | null>(null);
 
-  const generate = async () => {
+  const generate = useCallback(async (milestone?: MilestoneCtx | null) => {
     setLoading(true);
     try {
-      const data = await invokeFunction<{ questions: Question[]; topic: string }>("quiz", { interest, level });
+      const data = await invokeFunction<{ questions: Question[]; topic: string }>("quiz", {
+        interest,
+        level,
+        milestone: milestone ? { title: milestone.title, description: milestone.description } : undefined,
+      });
       setQuestions(data.questions);
       setTopic(data.topic);
       setCurrent(0);
       setSelected(null);
       setScore(0);
       setFinished(false);
+      setActiveMilestone(milestone ?? null);
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : "Failed to generate quiz");
     } finally {
       setLoading(false);
     }
-  };
+  }, [interest, level]);
+
+  // Auto-launch when a roadmap milestone requests a quiz
+  useEffect(() => {
+    if (!pendingQuizMilestone) return;
+    const key = `${pendingQuizMilestone.index}::${pendingQuizMilestone.title}`;
+    if (lastHandled.current === key) return;
+    lastHandled.current = key;
+    generate(pendingQuizMilestone);
+    clearPendingQuizMilestone();
+  }, [pendingQuizMilestone, generate, clearPendingQuizMilestone]);
 
   const handleAnswer = (idx: number) => {
     if (selected !== null) return;
