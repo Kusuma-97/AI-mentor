@@ -42,6 +42,9 @@ interface MentorContextType {
   setMilestoneProgress: (index: number, progress: number) => void;
   topicsExplored: string[];
   addTopic: (t: string) => void;
+  pendingQuizMilestone: { index: number; title: string; description: string } | null;
+  requestMilestoneQuiz: (m: { index: number; title: string; description: string }) => void;
+  clearPendingQuizMilestone: () => void;
   dataLoading: boolean;
 }
 
