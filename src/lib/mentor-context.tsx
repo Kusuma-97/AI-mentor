@@ -58,7 +58,13 @@ export function MentorProvider({ children }: { children: React.ReactNode }) {
   const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
   const [roadmapsByDomain, setRoadmapsByDomain] = useState<Record<string, RoadmapMilestone[]>>({});
   const [topicsExplored, setTopicsExplored] = useState<string[]>([]);
+  const [pendingQuizMilestone, setPendingQuizMilestone] = useState<{ index: number; title: string; description: string } | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
+
+  const requestMilestoneQuiz = useCallback((m: { index: number; title: string; description: string }) => {
+    setPendingQuizMilestone(m);
+  }, []);
+  const clearPendingQuizMilestone = useCallback(() => setPendingQuizMilestone(null), []);
 
   const domainKey = interest ?? "";
   const roadmap = roadmapsByDomain[domainKey] ?? [];
