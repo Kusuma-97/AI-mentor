@@ -41,6 +41,39 @@ export type Database = {
         }
         Relationships: []
       }
+      milestone_progress: {
+        Row: {
+          created_at: string
+          id: string
+          interest: string
+          notes: string | null
+          progress: number
+          sort_order: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          interest: string
+          notes?: string | null
+          progress?: number
+          sort_order: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          interest?: string
+          notes?: string | null
+          progress?: number
+          sort_order?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           academic_level: string | null

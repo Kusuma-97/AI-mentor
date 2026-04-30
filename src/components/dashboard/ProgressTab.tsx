@@ -17,7 +17,7 @@ export default function ProgressTab() {
     ? Math.round(quizResults.reduce((sum, r) => sum + (r.score / r.total) * 100, 0) / totalQuizzes)
     : 0;
   const roadmapProgress = roadmap.length > 0
-    ? Math.round((roadmap.filter((m) => m.completed).length / roadmap.length) * 100)
+    ? Math.round(roadmap.reduce((sum, m) => sum + (m.progress ?? (m.completed ? 100 : 0)), 0) / roadmap.length)
     : 0;
 
   const chartData = quizResults.map((r, i) => ({

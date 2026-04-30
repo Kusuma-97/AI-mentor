@@ -17,6 +17,7 @@ export interface RoadmapMilestone {
   description: string;
   resources: string[];
   completed: boolean;
+  progress: number; // 0–100
 }
 
 export interface ChatMessage {
@@ -38,6 +39,7 @@ interface MentorContextType {
   roadmap: RoadmapMilestone[];
   setRoadmap: (r: RoadmapMilestone[]) => void;
   toggleMilestone: (index: number) => void;
+  setMilestoneProgress: (index: number, progress: number) => void;
   topicsExplored: string[];
   addTopic: (t: string) => void;
   dataLoading: boolean;
@@ -98,21 +100,36 @@ export function MentorProvider({ children }: { children: React.ReactNode }) {
         }
 
         // Load roadmap milestones grouped by interest
-        const { data: milestones } = await supabase
-          .from("roadmap_milestones")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("sort_order", { ascending: true });
+        const [{ data: milestones }, { data: progressRows }] = await Promise.all([
+          supabase
+            .from("roadmap_milestones")
+            .select("*")
+            .eq("user_id", user.id)
+            .order("sort_order", { ascending: true }),
+          supabase
+            .from("milestone_progress")
+            .select("interest, sort_order, progress")
+            .eq("user_id", user.id),
+        ]);
 
         if (milestones) {
+          const progressMap = new Map<string, number>();
+          (progressRows ?? []).forEach((p: any) => {
+            progressMap.set(`${p.interest}::${p.sort_order}`, p.progress);
+          });
+
           const grouped: Record<string, RoadmapMilestone[]> = {};
-          milestones.forEach(m => {
+          milestones.forEach((m: any) => {
             if (!grouped[m.interest]) grouped[m.interest] = [];
+            const idx = grouped[m.interest].length;
+            const stored = progressMap.get(`${m.interest}::${idx}`);
+            const completed = m.completed ?? false;
             grouped[m.interest].push({
               title: m.title,
               description: m.description,
               resources: m.resources ?? [],
-              completed: m.completed ?? false,
+              completed,
+              progress: stored ?? (completed ? 100 : 0),
             });
           });
           setRoadmapsByDomain(grouped);
@@ -224,15 +241,16 @@ export function MentorProvider({ children }: { children: React.ReactNode }) {
   }, [user, interest]);
 
   const setRoadmap = useCallback((r: RoadmapMilestone[]) => {
-    setRoadmapsByDomain((prev) => ({ ...prev, [domainKey]: r }));
+    const normalized = r.map((m) => ({ ...m, progress: m.progress ?? (m.completed ? 100 : 0) }));
+    setRoadmapsByDomain((prev) => ({ ...prev, [domainKey]: normalized }));
     if (user && domainKey) {
-      // Delete existing milestones for this interest and insert new ones
+      // Replace milestones for this interest
       supabase.from("roadmap_milestones")
         .delete()
         .eq("user_id", user.id)
         .eq("interest", domainKey)
         .then(() => {
-          const rows = r.map((m, i) => ({
+          const rows = normalized.map((m, i) => ({
             user_id: user.id,
             interest: domainKey,
             title: m.title,
@@ -245,18 +263,82 @@ export function MentorProvider({ children }: { children: React.ReactNode }) {
             supabase.from("roadmap_milestones").insert(rows).then();
           }
         });
+
+      // Reset per-milestone progress for this interest
+      supabase.from("milestone_progress")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("interest", domainKey)
+        .then(() => {
+          const progressRows = normalized.map((m, i) => ({
+            user_id: user.id,
+            interest: domainKey,
+            sort_order: i,
+            progress: m.progress,
+          }));
+          if (progressRows.length > 0) {
+            supabase.from("milestone_progress").insert(progressRows).then();
+          }
+        });
     }
   }, [domainKey, user]);
 
   const toggleMilestone = useCallback((index: number) => {
     setRoadmapsByDomain((prev) => {
       const current = prev[domainKey] ?? [];
-      const updated = current.map((m, i) => (i === index ? { ...m, completed: !m.completed } : m));
+      const updated = current.map((m, i) => {
+        if (i !== index) return m;
+        const completed = !m.completed;
+        return { ...m, completed, progress: completed ? 100 : 0 };
+      });
 
-      // Update in DB
       if (user && domainKey) {
+        const target = updated[index];
         supabase.from("roadmap_milestones")
-          .update({ completed: updated[index].completed })
+          .update({ completed: target.completed })
+          .eq("user_id", user.id)
+          .eq("interest", domainKey)
+          .eq("sort_order", index)
+          .then();
+
+        supabase.from("milestone_progress")
+          .upsert({
+            user_id: user.id,
+            interest: domainKey,
+            sort_order: index,
+            progress: target.progress,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: "user_id,interest,sort_order" })
+          .then();
+      }
+
+      return { ...prev, [domainKey]: updated };
+    });
+  }, [domainKey, user]);
+
+  const setMilestoneProgress = useCallback((index: number, progress: number) => {
+    const clamped = Math.max(0, Math.min(100, Math.round(progress)));
+    setRoadmapsByDomain((prev) => {
+      const current = prev[domainKey] ?? [];
+      const updated = current.map((m, i) => {
+        if (i !== index) return m;
+        return { ...m, progress: clamped, completed: clamped >= 100 };
+      });
+
+      if (user && domainKey) {
+        const target = updated[index];
+        supabase.from("milestone_progress")
+          .upsert({
+            user_id: user.id,
+            interest: domainKey,
+            sort_order: index,
+            progress: clamped,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: "user_id,interest,sort_order" })
+          .then();
+
+        supabase.from("roadmap_milestones")
+          .update({ completed: target.completed })
           .eq("user_id", user.id)
           .eq("interest", domainKey)
           .eq("sort_order", index)
@@ -286,7 +368,7 @@ export function MentorProvider({ children }: { children: React.ReactNode }) {
         interest, level, setInterest, setLevel, setPreferences,
         chatMessages, setChatMessages, chatsByDomain,
         quizResults, addQuizResult,
-        roadmap, setRoadmap, toggleMilestone,
+        roadmap, setRoadmap, toggleMilestone, setMilestoneProgress,
         topicsExplored, addTopic,
         dataLoading,
       }}
