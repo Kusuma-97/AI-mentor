@@ -6,12 +6,14 @@ export async function streamChat({
   endpoint,
   messages,
   extra,
+  signal,
   onDelta,
   onDone,
 }: {
   endpoint: string;
   messages?: Msg[];
   extra?: Record<string, unknown>;
+  signal?: AbortSignal;
   onDelta: (text: string) => void;
   onDone: () => void;
 }) {
@@ -22,6 +24,7 @@ export async function streamChat({
       Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
     },
     body: JSON.stringify({ messages, ...extra }),
+    signal,
   });
 
   if (!resp.ok) {
