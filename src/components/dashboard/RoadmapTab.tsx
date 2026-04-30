@@ -130,7 +130,7 @@ export default function RoadmapTab() {
         animate={{ opacity: 1, y: 0 }}
       >
         <div className="flex items-center gap-3">
-          <p className="text-sm text-muted-foreground">{completed}/{roadmap.length} milestones</p>
+          <p className="text-sm text-muted-foreground">{completed}/{roadmap.length} done · {progress}% overall</p>
           <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
             <motion.div
               className="h-full gradient-primary rounded-full"
