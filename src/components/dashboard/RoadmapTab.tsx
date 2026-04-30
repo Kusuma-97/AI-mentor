@@ -163,6 +163,20 @@ export default function RoadmapTab() {
                 <p className="text-sm text-muted-foreground mt-1">{milestone.description}</p>
               </div>
             </CardHeader>
+            <CardContent className="pt-0 pl-12 space-y-3">
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-medium text-primary/70">Progress</span>
+                  <span className="text-xs font-semibold text-primary">{milestone.progress ?? 0}%</span>
+                </div>
+                <Slider
+                  value={[milestone.progress ?? 0]}
+                  onValueChange={(v) => setMilestoneProgress(i, v[0])}
+                  max={100}
+                  step={5}
+                />
+              </div>
+            </CardContent>
             {milestone.resources.length > 0 && (
               <CardContent className="pt-0 pl-12">
                 <p className="text-xs font-medium text-primary/70 mb-1">Resources:</p>
