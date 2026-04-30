@@ -42,6 +42,9 @@ interface MentorContextType {
   setMilestoneProgress: (index: number, progress: number) => void;
   topicsExplored: string[];
   addTopic: (t: string) => void;
+  pendingQuizMilestone: { index: number; title: string; description: string } | null;
+  requestMilestoneQuiz: (m: { index: number; title: string; description: string }) => void;
+  clearPendingQuizMilestone: () => void;
   dataLoading: boolean;
 }
 
@@ -55,7 +58,13 @@ export function MentorProvider({ children }: { children: React.ReactNode }) {
   const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
   const [roadmapsByDomain, setRoadmapsByDomain] = useState<Record<string, RoadmapMilestone[]>>({});
   const [topicsExplored, setTopicsExplored] = useState<string[]>([]);
+  const [pendingQuizMilestone, setPendingQuizMilestone] = useState<{ index: number; title: string; description: string } | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
+
+  const requestMilestoneQuiz = useCallback((m: { index: number; title: string; description: string }) => {
+    setPendingQuizMilestone(m);
+  }, []);
+  const clearPendingQuizMilestone = useCallback(() => setPendingQuizMilestone(null), []);
 
   const domainKey = interest ?? "";
   const roadmap = roadmapsByDomain[domainKey] ?? [];
@@ -370,6 +379,7 @@ export function MentorProvider({ children }: { children: React.ReactNode }) {
         quizResults, addQuizResult,
         roadmap, setRoadmap, toggleMilestone, setMilestoneProgress,
         topicsExplored, addTopic,
+        pendingQuizMilestone, requestMilestoneQuiz, clearPendingQuizMilestone,
         dataLoading,
       }}
     >

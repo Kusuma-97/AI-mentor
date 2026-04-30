@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useMentor } from "@/lib/mentor-context";
 import { invokeFunction } from "@/lib/ai-stream";
 import { Button } from "@/components/ui/button";
@@ -15,8 +15,14 @@ interface Question {
   explanation: string;
 }
 
+interface MilestoneCtx {
+  index: number;
+  title: string;
+  description: string;
+}
+
 export default function QuizTab() {
-  const { interest, level, addQuizResult } = useMentor();
+  const { interest, level, addQuizResult, pendingQuizMilestone, clearPendingQuizMilestone } = useMentor();
   const { recordQuizCompletion } = useStreaks();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [current, setCurrent] = useState(0);
@@ -25,23 +31,40 @@ export default function QuizTab() {
   const [finished, setFinished] = useState(false);
   const [loading, setLoading] = useState(false);
   const [topic, setTopic] = useState("");
+  const [activeMilestone, setActiveMilestone] = useState<MilestoneCtx | null>(null);
+  const lastHandled = useRef<string | null>(null);
 
-  const generate = async () => {
+  const generate = useCallback(async (milestone?: MilestoneCtx | null) => {
     setLoading(true);
     try {
-      const data = await invokeFunction<{ questions: Question[]; topic: string }>("quiz", { interest, level });
+      const data = await invokeFunction<{ questions: Question[]; topic: string }>("quiz", {
+        interest,
+        level,
+        milestone: milestone ? { title: milestone.title, description: milestone.description } : undefined,
+      });
       setQuestions(data.questions);
       setTopic(data.topic);
       setCurrent(0);
       setSelected(null);
       setScore(0);
       setFinished(false);
+      setActiveMilestone(milestone ?? null);
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : "Failed to generate quiz");
     } finally {
       setLoading(false);
     }
-  };
+  }, [interest, level]);
+
+  // Auto-launch when a roadmap milestone requests a quiz
+  useEffect(() => {
+    if (!pendingQuizMilestone) return;
+    const key = `${pendingQuizMilestone.index}::${pendingQuizMilestone.title}`;
+    if (lastHandled.current === key) return;
+    lastHandled.current = key;
+    generate(pendingQuizMilestone);
+    clearPendingQuizMilestone();
+  }, [pendingQuizMilestone, generate, clearPendingQuizMilestone]);
 
   const handleAnswer = (idx: number) => {
     if (selected !== null) return;
@@ -97,14 +120,25 @@ export default function QuizTab() {
               <HelpCircle className="h-14 w-14 text-primary mx-auto mb-4" />
             </motion.div>
             <h2 className="text-2xl font-bold gradient-text mb-2">Test Your Knowledge</h2>
-            <p className="text-muted-foreground mb-6">AI-generated quiz on <span className="text-primary font-medium">{interest}</span> for <span className="text-primary font-medium">{level}</span> level.</p>
+            <p className="text-muted-foreground mb-6">
+              {activeMilestone ? (
+                <>Quiz for module: <span className="text-primary font-medium">{activeMilestone.title}</span></>
+              ) : (
+                <>AI-generated quiz on <span className="text-primary font-medium">{interest}</span> for <span className="text-primary font-medium">{level}</span> level.</>
+              )}
+            </p>
           </>
         )}
-        <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-          <Button onClick={generate} disabled={loading} className="gradient-primary text-primary-foreground px-8">
+        <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex gap-2 justify-center flex-wrap">
+          <Button onClick={() => generate(activeMilestone)} disabled={loading} className="gradient-primary text-primary-foreground px-8">
             {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-            {finished ? "New Quiz" : "Start Quiz"}
+            {finished ? (activeMilestone ? "Retake Module Quiz" : "New Quiz") : "Start Quiz"}
           </Button>
+          {activeMilestone && (
+            <Button variant="outline" onClick={() => { setActiveMilestone(null); generate(null); }} disabled={loading}>
+              General Quiz
+            </Button>
+          )}
         </motion.div>
       </motion.div>
     );

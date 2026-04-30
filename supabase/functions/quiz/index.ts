@@ -9,9 +9,20 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { interest, level } = await req.json();
+    const { interest, level, milestone } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+
+    const milestoneTitle = milestone?.title?.toString().slice(0, 200);
+    const milestoneDesc = milestone?.description?.toString().slice(0, 500);
+
+    const systemContent = milestoneTitle
+      ? `You are a quiz generator for ${interest} at ${level} level. Generate questions strictly focused on the roadmap module: "${milestoneTitle}". Stay tightly on this module's scope.`
+      : `You are a quiz generator for ${interest} at ${level} level. Generate challenging but fair multiple-choice questions.`;
+
+    const userContent = milestoneTitle
+      ? `Generate 5 multiple-choice quiz questions for a ${level} learner about the module "${milestoneTitle}"${milestoneDesc ? ` — ${milestoneDesc}` : ""}. Set the topic field to this module name. All questions must be specific to this module's content, not general ${interest}.`
+      : `Generate 5 multiple-choice quiz questions about ${interest} for a ${level} learner. Pick a specific subtopic.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -22,14 +33,8 @@ serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
         messages: [
-          {
-            role: "system",
-            content: `You are a quiz generator for ${interest} at ${level} level. Generate challenging but fair multiple-choice questions.`,
-          },
-          {
-            role: "user",
-            content: `Generate 5 multiple-choice quiz questions about ${interest} for a ${level} learner. Pick a specific subtopic.`,
-          },
+          { role: "system", content: systemContent },
+          { role: "user", content: userContent },
         ],
         tools: [
           {
