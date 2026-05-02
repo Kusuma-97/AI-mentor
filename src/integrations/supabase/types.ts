@@ -139,6 +139,7 @@ export type Database = {
           created_at: string
           id: string
           interest: string | null
+          level: string | null
           score: number
           topic: string
           total: number
@@ -148,6 +149,7 @@ export type Database = {
           created_at?: string
           id?: string
           interest?: string | null
+          level?: string | null
           score: number
           topic: string
           total: number
@@ -157,6 +159,7 @@ export type Database = {
           created_at?: string
           id?: string
           interest?: string | null
+          level?: string | null
           score?: number
           topic?: string
           total?: number

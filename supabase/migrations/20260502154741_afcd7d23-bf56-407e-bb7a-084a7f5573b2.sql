@@ -1,0 +1,1 @@
+ALTER TABLE public.quiz_results ADD COLUMN IF NOT EXISTS level TEXT;
