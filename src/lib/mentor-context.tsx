@@ -103,11 +103,13 @@ export function MentorProvider({ children }: { children: React.ReactNode }) {
           .order("created_at", { ascending: true });
 
         if (quizzes) {
-          setQuizResults(quizzes.map(q => ({
+          setQuizResults(quizzes.map((q: any) => ({
             topic: q.topic,
             score: q.score,
             total: q.total,
             timestamp: new Date(q.created_at).getTime(),
+            interest: q.interest ?? null,
+            level: q.level ?? null,
           })));
         }
 
