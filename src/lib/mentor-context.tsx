@@ -10,6 +10,8 @@ export interface QuizResult {
   score: number;
   total: number;
   timestamp: number;
+  interest?: string | null;
+  level?: string | null;
 }
 
 export interface RoadmapMilestone {
