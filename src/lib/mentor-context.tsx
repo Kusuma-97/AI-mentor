@@ -378,6 +378,22 @@ export function MentorProvider({ children }: { children: React.ReactNode }) {
     });
   }, [user]);
 
+  const resetDomainProgress = useCallback(async (domain: string) => {
+    if (!user || !domain) return;
+    // Reset milestone progress + completion + quiz results for this domain
+    await Promise.all([
+      supabase.from("milestone_progress").delete().eq("user_id", user.id).eq("interest", domain),
+      supabase.from("roadmap_milestones").update({ completed: false }).eq("user_id", user.id).eq("interest", domain),
+      supabase.from("quiz_results").delete().eq("user_id", user.id).eq("interest", domain),
+    ]);
+    setRoadmapsByDomain((prev) => {
+      const current = prev[domain];
+      if (!current) return prev;
+      return { ...prev, [domain]: current.map((m) => ({ ...m, completed: false, progress: 0 })) };
+    });
+    setQuizResults((prev) => prev.filter((r) => r.interest !== domain));
+  }, [user]);
+
   return (
     <MentorContext.Provider
       value={{
@@ -387,6 +403,7 @@ export function MentorProvider({ children }: { children: React.ReactNode }) {
         roadmap, setRoadmap, toggleMilestone, setMilestoneProgress,
         topicsExplored, addTopic,
         pendingQuizMilestone, requestMilestoneQuiz, clearPendingQuizMilestone,
+        resetDomainProgress,
         dataLoading,
       }}
     >
