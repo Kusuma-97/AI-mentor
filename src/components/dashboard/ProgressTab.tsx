@@ -1,15 +1,37 @@
 import { useMentor } from "@/lib/mentor-context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { BarChart3, Target, BookOpen, CheckCircle } from "lucide-react";
+import { BarChart3, Target, BookOpen, CheckCircle, RotateCcw } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 import { motion } from "framer-motion";
 import { useStreaks } from "@/hooks/use-streaks";
 import StreakBadges from "@/components/dashboard/StreakBadges";
+import { Button } from "@/components/ui/button";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
+  AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export default function ProgressTab() {
-  const { quizResults, roadmap, topicsExplored, interest, level } = useMentor();
+  const { quizResults, roadmap, topicsExplored, interest, level, resetDomainProgress } = useMentor();
+  const [resetting, setResetting] = useState(false);
+
+  const handleReset = async () => {
+    if (!interest) return;
+    setResetting(true);
+    try {
+      await resetDomainProgress(interest);
+      toast.success(`Progress reset for ${interest}`);
+    } catch {
+      toast.error("Failed to reset progress");
+    } finally {
+      setResetting(false);
+    }
+  };
   const { currentStreak, longestStreak, earnedBadges } = useStreaks();
 
   // Scope quizzes to current domain + difficulty (legacy rows without level fall back to interest match)
@@ -49,18 +71,44 @@ export default function ProgressTab() {
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-wrap items-center gap-2 text-sm"
+          className="flex flex-wrap items-center justify-between gap-2 text-sm"
         >
-          <span className="text-muted-foreground">Showing progress for</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-muted-foreground">Showing progress for</span>
+            {interest && (
+              <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium border border-primary/20">
+                {interest}
+              </span>
+            )}
+            {level && (
+              <span className="px-2.5 py-0.5 rounded-full bg-accent/10 text-accent font-medium border border-accent/20">
+                {level}
+              </span>
+            )}
+          </div>
           {interest && (
-            <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium border border-primary/20">
-              {interest}
-            </span>
-          )}
-          {level && (
-            <span className="px-2.5 py-0.5 rounded-full bg-accent/10 text-accent font-medium border border-accent/20">
-              {level}
-            </span>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1.5" disabled={resetting}>
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  Restart Progress
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Restart progress for {interest}?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will reset all milestone completion, milestone progress, and quiz results
+                    for <span className="font-semibold">{interest}</span>. Your roadmap milestones
+                    and chat history will be kept. This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleReset}>Restart</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
         </motion.div>
       )}
