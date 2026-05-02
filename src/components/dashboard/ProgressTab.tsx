@@ -1,15 +1,37 @@
 import { useMentor } from "@/lib/mentor-context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { BarChart3, Target, BookOpen, CheckCircle } from "lucide-react";
+import { BarChart3, Target, BookOpen, CheckCircle, RotateCcw } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 import { motion } from "framer-motion";
 import { useStreaks } from "@/hooks/use-streaks";
 import StreakBadges from "@/components/dashboard/StreakBadges";
+import { Button } from "@/components/ui/button";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
+  AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export default function ProgressTab() {
-  const { quizResults, roadmap, topicsExplored, interest, level } = useMentor();
+  const { quizResults, roadmap, topicsExplored, interest, level, resetDomainProgress } = useMentor();
+  const [resetting, setResetting] = useState(false);
+
+  const handleReset = async () => {
+    if (!interest) return;
+    setResetting(true);
+    try {
+      await resetDomainProgress(interest);
+      toast.success(`Progress reset for ${interest}`);
+    } catch {
+      toast.error("Failed to reset progress");
+    } finally {
+      setResetting(false);
+    }
+  };
   const { currentStreak, longestStreak, earnedBadges } = useStreaks();
 
   // Scope quizzes to current domain + difficulty (legacy rows without level fall back to interest match)
