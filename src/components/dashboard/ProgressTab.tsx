@@ -9,12 +9,19 @@ import { useStreaks } from "@/hooks/use-streaks";
 import StreakBadges from "@/components/dashboard/StreakBadges";
 
 export default function ProgressTab() {
-  const { quizResults, roadmap, topicsExplored } = useMentor();
+  const { quizResults, roadmap, topicsExplored, interest, level } = useMentor();
   const { currentStreak, longestStreak, earnedBadges } = useStreaks();
 
-  const totalQuizzes = quizResults.length;
+  // Scope quizzes to current domain + difficulty (legacy rows without level fall back to interest match)
+  const scopedQuizzes = quizResults.filter((r) => {
+    const interestMatch = !interest || !r.interest || r.interest === interest;
+    const levelMatch = !r.level || !level || r.level === level;
+    return interestMatch && levelMatch;
+  });
+
+  const totalQuizzes = scopedQuizzes.length;
   const avgAccuracy = totalQuizzes > 0
-    ? Math.round(quizResults.reduce((sum, r) => sum + (r.score / r.total) * 100, 0) / totalQuizzes)
+    ? Math.round(scopedQuizzes.reduce((sum, r) => sum + (r.score / r.total) * 100, 0) / totalQuizzes)
     : 0;
   const roadmapProgress = roadmap.length > 0
     ? Math.round(roadmap.reduce((sum, m) => sum + (m.progress ?? (m.completed ? 100 : 0)), 0) / roadmap.length)
