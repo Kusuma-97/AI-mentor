@@ -185,6 +185,46 @@ export default function RoadmapTab() {
                 <HelpCircle className="h-3.5 w-3.5" />
                 Take Module Quiz
               </Button>
+              {(() => {
+                const titleLower = milestone.title.toLowerCase().trim();
+                const history = quizResults
+                  .filter((r) => {
+                    const t = r.topic?.toLowerCase().trim() ?? "";
+                    return t === titleLower || t.includes(titleLower) || titleLower.includes(t);
+                  })
+                  .sort((a, b) => b.timestamp - a.timestamp);
+                if (history.length === 0) return null;
+                return (
+                  <div className="rounded-md border border-border/50 bg-muted/20 p-3">
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <History className="h-3.5 w-3.5 text-primary/70" />
+                      <span className="text-xs font-medium text-primary/70">
+                        Quiz History ({history.length})
+                      </span>
+                    </div>
+                    <ul className="space-y-1.5">
+                      {history.map((r, idx) => {
+                        const pct = Math.round((r.score / r.total) * 100);
+                        const date = new Date(r.timestamp).toLocaleDateString(undefined, {
+                          month: "short", day: "numeric", year: "numeric",
+                        });
+                        const color = pct >= 80 ? "text-success" : pct >= 50 ? "text-warning" : "text-destructive";
+                        return (
+                          <li key={idx} className="flex items-center justify-between text-xs">
+                            <span className="text-muted-foreground">{date}</span>
+                            <span className="text-muted-foreground truncate max-w-[40%]" title={r.topic}>
+                              {r.topic}
+                            </span>
+                            <span className={`font-semibold ${color}`}>
+                              {r.score}/{r.total} · {pct}%
+                            </span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                );
+              })()}
             </CardContent>
             {milestone.resources.length > 0 && (
               <CardContent className="pt-0 pl-12">
