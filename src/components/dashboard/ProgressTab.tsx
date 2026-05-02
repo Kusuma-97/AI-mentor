@@ -9,18 +9,25 @@ import { useStreaks } from "@/hooks/use-streaks";
 import StreakBadges from "@/components/dashboard/StreakBadges";
 
 export default function ProgressTab() {
-  const { quizResults, roadmap, topicsExplored } = useMentor();
+  const { quizResults, roadmap, topicsExplored, interest, level } = useMentor();
   const { currentStreak, longestStreak, earnedBadges } = useStreaks();
 
-  const totalQuizzes = quizResults.length;
+  // Scope quizzes to current domain + difficulty (legacy rows without level fall back to interest match)
+  const scopedQuizzes = quizResults.filter((r) => {
+    const interestMatch = !interest || !r.interest || r.interest === interest;
+    const levelMatch = !r.level || !level || r.level === level;
+    return interestMatch && levelMatch;
+  });
+
+  const totalQuizzes = scopedQuizzes.length;
   const avgAccuracy = totalQuizzes > 0
-    ? Math.round(quizResults.reduce((sum, r) => sum + (r.score / r.total) * 100, 0) / totalQuizzes)
+    ? Math.round(scopedQuizzes.reduce((sum, r) => sum + (r.score / r.total) * 100, 0) / totalQuizzes)
     : 0;
   const roadmapProgress = roadmap.length > 0
     ? Math.round(roadmap.reduce((sum, m) => sum + (m.progress ?? (m.completed ? 100 : 0)), 0) / roadmap.length)
     : 0;
 
-  const chartData = quizResults.map((r, i) => ({
+  const chartData = scopedQuizzes.map((r, i) => ({
     name: `Q${i + 1}`,
     score: Math.round((r.score / r.total) * 100),
   }));
@@ -37,6 +44,27 @@ export default function ProgressTab() {
 
   return (
     <div className="space-y-6">
+      {/* Scope indicator */}
+      {(interest || level) && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-wrap items-center gap-2 text-sm"
+        >
+          <span className="text-muted-foreground">Showing progress for</span>
+          {interest && (
+            <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium border border-primary/20">
+              {interest}
+            </span>
+          )}
+          {level && (
+            <span className="px-2.5 py-0.5 rounded-full bg-accent/10 text-accent font-medium border border-accent/20">
+              {level}
+            </span>
+          )}
+        </motion.div>
+      )}
+
       {/* Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {metrics.map(({ icon: Icon, label, value, color }, i) => (
