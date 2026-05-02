@@ -44,6 +44,27 @@ export default function ProgressTab() {
 
   return (
     <div className="space-y-6">
+      {/* Scope indicator */}
+      {(interest || level) && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-wrap items-center gap-2 text-sm"
+        >
+          <span className="text-muted-foreground">Showing progress for</span>
+          {interest && (
+            <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium border border-primary/20">
+              {interest}
+            </span>
+          )}
+          {level && (
+            <span className="px-2.5 py-0.5 rounded-full bg-accent/10 text-accent font-medium border border-accent/20">
+              {level}
+            </span>
+          )}
+        </motion.div>
+      )}
+
       {/* Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {metrics.map(({ icon: Icon, label, value, color }, i) => (
