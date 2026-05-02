@@ -71,18 +71,44 @@ export default function ProgressTab() {
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-wrap items-center gap-2 text-sm"
+          className="flex flex-wrap items-center justify-between gap-2 text-sm"
         >
-          <span className="text-muted-foreground">Showing progress for</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-muted-foreground">Showing progress for</span>
+            {interest && (
+              <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium border border-primary/20">
+                {interest}
+              </span>
+            )}
+            {level && (
+              <span className="px-2.5 py-0.5 rounded-full bg-accent/10 text-accent font-medium border border-accent/20">
+                {level}
+              </span>
+            )}
+          </div>
           {interest && (
-            <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium border border-primary/20">
-              {interest}
-            </span>
-          )}
-          {level && (
-            <span className="px-2.5 py-0.5 rounded-full bg-accent/10 text-accent font-medium border border-accent/20">
-              {level}
-            </span>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1.5" disabled={resetting}>
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  Restart Progress
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Restart progress for {interest}?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will reset all milestone completion, milestone progress, and quiz results
+                    for <span className="font-semibold">{interest}</span>. Your roadmap milestones
+                    and chat history will be kept. This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleReset}>Restart</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
         </motion.div>
       )}
