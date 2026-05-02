@@ -241,17 +241,19 @@ export function MentorProvider({ children }: { children: React.ReactNode }) {
   }, [user, domainKey]);
 
   const addQuizResult = useCallback((r: QuizResult) => {
-    setQuizResults((prev) => [...prev, r]);
+    const enriched: QuizResult = { ...r, interest: r.interest ?? interest, level: r.level ?? level };
+    setQuizResults((prev) => [...prev, enriched]);
     if (user) {
       supabase.from("quiz_results").insert({
         user_id: user.id,
-        topic: r.topic,
-        score: r.score,
-        total: r.total,
-        interest: interest,
-      }).then();
+        topic: enriched.topic,
+        score: enriched.score,
+        total: enriched.total,
+        interest: enriched.interest,
+        level: enriched.level,
+      } as any).then();
     }
-  }, [user, interest]);
+  }, [user, interest, level]);
 
   const setRoadmap = useCallback((r: RoadmapMilestone[]) => {
     const normalized = r.map((m) => ({ ...m, progress: m.progress ?? (m.completed ? 100 : 0) }));
