@@ -48,6 +48,7 @@ interface MentorContextType {
   pendingQuizMilestone: { index: number; title: string; description: string } | null;
   requestMilestoneQuiz: (m: { index: number; title: string; description: string }) => void;
   clearPendingQuizMilestone: () => void;
+  resetDomainProgress: (domain: string) => Promise<void>;
   dataLoading: boolean;
 }
 
