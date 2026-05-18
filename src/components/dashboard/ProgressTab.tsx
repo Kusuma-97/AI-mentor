@@ -126,7 +126,10 @@ export default function ProgressTab() {
               open={dialogOpen}
               onOpenChange={(open) => {
                 setDialogOpen(open);
-                if (open) setSelected(interest ? [interest] : []);
+                if (open) {
+                  setSelected(interest ? [interest] : []);
+                  setFailedDomains([]);
+                }
               }}
             >
               <AlertDialogTrigger asChild>
