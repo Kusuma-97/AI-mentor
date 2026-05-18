@@ -21,6 +21,7 @@ export default function ProgressTab() {
   const [resetting, setResetting] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
+  const [failedDomains, setFailedDomains] = useState<{ domain: string; error: string }[]>([]);
 
   // Discover all domains the user has touched
   const availableDomains = useMemo(() => {
@@ -37,15 +38,29 @@ export default function ProgressTab() {
   const handleReset = async () => {
     if (selected.length === 0) return;
     setResetting(true);
+    setFailedDomains([]);
     try {
-      await resetDomainsProgress(selected);
-      toast.success(
-        selected.length === 1
-          ? `Progress reset for ${selected[0]}`
-          : `Progress reset for ${selected.length} domains`
-      );
-      setSelected([]);
-      setDialogOpen(false);
+      const { succeeded, failed } = await resetDomainsProgress(selected);
+
+      if (succeeded.length > 0 && failed.length === 0) {
+        toast.success(
+          succeeded.length === 1
+            ? `Progress reset for ${succeeded[0]}`
+            : `Progress reset for ${succeeded.length} domains`
+        );
+        setSelected([]);
+        setDialogOpen(false);
+      } else if (succeeded.length > 0 && failed.length > 0) {
+        toast.warning(
+          `Reset ${succeeded.length} of ${succeeded.length + failed.length} domains. ${failed.length} failed.`
+        );
+        // Keep only failed ones selected so the user can retry
+        setSelected(failed.map((f) => f.domain));
+        setFailedDomains(failed);
+      } else {
+        toast.error(`Failed to reset progress for ${failed.length} domain${failed.length === 1 ? "" : "s"}`);
+        setFailedDomains(failed);
+      }
     } catch {
       toast.error("Failed to reset progress");
     } finally {
