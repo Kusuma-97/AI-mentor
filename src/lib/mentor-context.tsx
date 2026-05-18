@@ -421,7 +421,7 @@ export function MentorProvider({ children }: { children: React.ReactNode }) {
         roadmap, setRoadmap, toggleMilestone, setMilestoneProgress,
         topicsExplored, addTopic,
         pendingQuizMilestone, requestMilestoneQuiz, clearPendingQuizMilestone,
-        resetDomainProgress,
+        resetDomainProgress, resetDomainsProgress,
         dataLoading,
       }}
     >
