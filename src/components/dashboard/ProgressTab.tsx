@@ -137,15 +137,17 @@ export default function ProgressTab() {
                   <div className="flex gap-2">
                     <button
                       type="button"
-                      className="text-primary hover:underline"
+                      className="text-primary hover:underline disabled:opacity-50 disabled:pointer-events-none"
                       onClick={() => setSelected(availableDomains)}
+                      disabled={resetting}
                     >
                       Select all
                     </button>
                     <button
                       type="button"
-                      className="text-muted-foreground hover:underline"
+                      className="text-muted-foreground hover:underline disabled:opacity-50 disabled:pointer-events-none"
                       onClick={() => setSelected([])}
+                      disabled={resetting}
                     >
                       Clear
                     </button>
@@ -156,11 +158,12 @@ export default function ProgressTab() {
                   {availableDomains.map((d) => (
                     <label
                       key={d}
-                      className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted/50 cursor-pointer"
+                      className={`flex items-center gap-2 px-2 py-1.5 rounded ${resetting ? "opacity-50 cursor-not-allowed" : "hover:bg-muted/50 cursor-pointer"}`}
                     >
                       <Checkbox
                         checked={selected.includes(d)}
                         onCheckedChange={() => toggleDomain(d)}
+                        disabled={resetting}
                       />
                       <span className="text-sm">{d}</span>
                     </label>
@@ -168,7 +171,7 @@ export default function ProgressTab() {
                 </div>
 
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogCancel disabled={resetting}>Cancel</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={(e) => {
                       e.preventDefault();
@@ -176,7 +179,14 @@ export default function ProgressTab() {
                     }}
                     disabled={selected.length === 0 || resetting}
                   >
-                    Restart {selected.length > 0 ? `(${selected.length})` : ""}
+                    {resetting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Restarting…
+                      </>
+                    ) : (
+                      <>Restart {selected.length > 0 ? `(${selected.length})` : ""}</>
+                    )}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
