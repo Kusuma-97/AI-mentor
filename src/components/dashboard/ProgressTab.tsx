@@ -1,6 +1,6 @@
 import { useMentor } from "@/lib/mentor-context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, Target, BookOpen, CheckCircle, RotateCcw } from "lucide-react";
+import { BarChart3, Target, BookOpen, CheckCircle, RotateCcw, Loader2 } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 import { motion } from "framer-motion";
