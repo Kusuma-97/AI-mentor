@@ -1,6 +1,5 @@
 import { useMentor } from "@/lib/mentor-context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { BarChart3, Target, BookOpen, CheckCircle, RotateCcw } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
@@ -8,24 +7,45 @@ import { motion } from "framer-motion";
 import { useStreaks } from "@/hooks/use-streaks";
 import StreakBadges from "@/components/dashboard/StreakBadges";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
   AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 export default function ProgressTab() {
-  const { quizResults, roadmap, topicsExplored, interest, level, resetDomainProgress } = useMentor();
+  const { quizResults, roadmap, topicsExplored, interest, level, resetDomainsProgress, chatsByDomain } = useMentor();
   const [resetting, setResetting] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selected, setSelected] = useState<string[]>([]);
+
+  // Discover all domains the user has touched
+  const availableDomains = useMemo(() => {
+    const set = new Set<string>();
+    quizResults.forEach((r) => r.interest && set.add(r.interest));
+    Object.keys(chatsByDomain ?? {}).forEach((k) => k && set.add(k));
+    if (interest) set.add(interest);
+    return Array.from(set).sort();
+  }, [quizResults, chatsByDomain, interest]);
+
+  const toggleDomain = (d: string) =>
+    setSelected((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]));
 
   const handleReset = async () => {
-    if (!interest) return;
+    if (selected.length === 0) return;
     setResetting(true);
     try {
-      await resetDomainProgress(interest);
-      toast.success(`Progress reset for ${interest}`);
+      await resetDomainsProgress(selected);
+      toast.success(
+        selected.length === 1
+          ? `Progress reset for ${selected[0]}`
+          : `Progress reset for ${selected.length} domains`
+      );
+      setSelected([]);
+      setDialogOpen(false);
     } catch {
       toast.error("Failed to reset progress");
     } finally {
