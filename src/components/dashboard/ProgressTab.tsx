@@ -148,6 +148,25 @@ export default function ProgressTab() {
                   </AlertDialogDescription>
                 </AlertDialogHeader>
 
+                {failedDomains.length > 0 && (
+                  <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm">
+                    <p className="font-medium text-destructive mb-1">
+                      Failed to reset {failedDomains.length} domain{failedDomains.length === 1 ? "" : "s"}
+                    </p>
+                    <ul className="space-y-0.5 text-xs text-destructive/90 list-disc list-inside">
+                      {failedDomains.map((f) => (
+                        <li key={f.domain}>
+                          <span className="font-medium">{f.domain}</span>
+                          <span className="text-destructive/70"> — {f.error}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Successful domains were reset. You can retry the failed ones below.
+                    </p>
+                  </div>
+                )}
+
                 <div className="my-2 flex items-center justify-between text-xs">
                   <span className="text-muted-foreground">
                     {selected.length} of {availableDomains.length} selected
