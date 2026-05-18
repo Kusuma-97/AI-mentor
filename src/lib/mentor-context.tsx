@@ -49,6 +49,7 @@ interface MentorContextType {
   requestMilestoneQuiz: (m: { index: number; title: string; description: string }) => void;
   clearPendingQuizMilestone: () => void;
   resetDomainProgress: (domain: string) => Promise<void>;
+  resetDomainsProgress: (domains: string[]) => Promise<void>;
   dataLoading: boolean;
 }
 
@@ -394,6 +395,23 @@ export function MentorProvider({ children }: { children: React.ReactNode }) {
     setQuizResults((prev) => prev.filter((r) => r.interest !== domain));
   }, [user]);
 
+  const resetDomainsProgress = useCallback(async (domains: string[]) => {
+    if (!user || domains.length === 0) return;
+    await Promise.all([
+      supabase.from("milestone_progress").delete().eq("user_id", user.id).in("interest", domains),
+      supabase.from("roadmap_milestones").update({ completed: false }).eq("user_id", user.id).in("interest", domains),
+      supabase.from("quiz_results").delete().eq("user_id", user.id).in("interest", domains),
+    ]);
+    setRoadmapsByDomain((prev) => {
+      const next = { ...prev };
+      for (const d of domains) {
+        if (next[d]) next[d] = next[d].map((m) => ({ ...m, completed: false, progress: 0 }));
+      }
+      return next;
+    });
+    setQuizResults((prev) => prev.filter((r) => !r.interest || !domains.includes(r.interest)));
+  }, [user]);
+
   return (
     <MentorContext.Provider
       value={{
@@ -403,7 +421,7 @@ export function MentorProvider({ children }: { children: React.ReactNode }) {
         roadmap, setRoadmap, toggleMilestone, setMilestoneProgress,
         topicsExplored, addTopic,
         pendingQuizMilestone, requestMilestoneQuiz, clearPendingQuizMilestone,
-        resetDomainProgress,
+        resetDomainProgress, resetDomainsProgress,
         dataLoading,
       }}
     >

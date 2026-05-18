@@ -1,6 +1,5 @@
 import { useMentor } from "@/lib/mentor-context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { BarChart3, Target, BookOpen, CheckCircle, RotateCcw } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
@@ -8,24 +7,45 @@ import { motion } from "framer-motion";
 import { useStreaks } from "@/hooks/use-streaks";
 import StreakBadges from "@/components/dashboard/StreakBadges";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
   AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 export default function ProgressTab() {
-  const { quizResults, roadmap, topicsExplored, interest, level, resetDomainProgress } = useMentor();
+  const { quizResults, roadmap, topicsExplored, interest, level, resetDomainsProgress, chatsByDomain } = useMentor();
   const [resetting, setResetting] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selected, setSelected] = useState<string[]>([]);
+
+  // Discover all domains the user has touched
+  const availableDomains = useMemo(() => {
+    const set = new Set<string>();
+    quizResults.forEach((r) => r.interest && set.add(r.interest));
+    Object.keys(chatsByDomain ?? {}).forEach((k) => k && set.add(k));
+    if (interest) set.add(interest);
+    return Array.from(set).sort();
+  }, [quizResults, chatsByDomain, interest]);
+
+  const toggleDomain = (d: string) =>
+    setSelected((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]));
 
   const handleReset = async () => {
-    if (!interest) return;
+    if (selected.length === 0) return;
     setResetting(true);
     try {
-      await resetDomainProgress(interest);
-      toast.success(`Progress reset for ${interest}`);
+      await resetDomainsProgress(selected);
+      toast.success(
+        selected.length === 1
+          ? `Progress reset for ${selected[0]}`
+          : `Progress reset for ${selected.length} domains`
+      );
+      setSelected([]);
+      setDialogOpen(false);
     } catch {
       toast.error("Failed to reset progress");
     } finally {
@@ -86,8 +106,14 @@ export default function ProgressTab() {
               </span>
             )}
           </div>
-          {interest && (
-            <AlertDialog>
+          {availableDomains.length > 0 && (
+            <AlertDialog
+              open={dialogOpen}
+              onOpenChange={(open) => {
+                setDialogOpen(open);
+                if (open) setSelected(interest ? [interest] : []);
+              }}
+            >
               <AlertDialogTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-1.5" disabled={resetting}>
                   <RotateCcw className="h-3.5 w-3.5" />
@@ -96,16 +122,62 @@ export default function ProgressTab() {
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Restart progress for {interest}?</AlertDialogTitle>
+                  <AlertDialogTitle>Restart progress for selected domains?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This will reset all milestone completion, milestone progress, and quiz results
-                    for <span className="font-semibold">{interest}</span>. Your roadmap milestones
-                    and chat history will be kept. This action cannot be undone.
+                    Select one or more domains. Milestone completion, milestone progress, and quiz
+                    results will be reset for each. Roadmap milestones and chat history are kept.
+                    This action cannot be undone.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
+
+                <div className="my-2 flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">
+                    {selected.length} of {availableDomains.length} selected
+                  </span>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      className="text-primary hover:underline"
+                      onClick={() => setSelected(availableDomains)}
+                    >
+                      Select all
+                    </button>
+                    <button
+                      type="button"
+                      className="text-muted-foreground hover:underline"
+                      onClick={() => setSelected([])}
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </div>
+
+                <div className="max-h-64 overflow-y-auto space-y-1 rounded-md border border-border/50 p-2">
+                  {availableDomains.map((d) => (
+                    <label
+                      key={d}
+                      className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted/50 cursor-pointer"
+                    >
+                      <Checkbox
+                        checked={selected.includes(d)}
+                        onCheckedChange={() => toggleDomain(d)}
+                      />
+                      <span className="text-sm">{d}</span>
+                    </label>
+                  ))}
+                </div>
+
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleReset}>Restart</AlertDialogAction>
+                  <AlertDialogAction
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleReset();
+                    }}
+                    disabled={selected.length === 0 || resetting}
+                  >
+                    Restart {selected.length > 0 ? `(${selected.length})` : ""}
+                  </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
