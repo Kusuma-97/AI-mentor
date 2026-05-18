@@ -106,8 +106,14 @@ export default function ProgressTab() {
               </span>
             )}
           </div>
-          {interest && (
-            <AlertDialog>
+          {availableDomains.length > 0 && (
+            <AlertDialog
+              open={dialogOpen}
+              onOpenChange={(open) => {
+                setDialogOpen(open);
+                if (open) setSelected(interest ? [interest] : []);
+              }}
+            >
               <AlertDialogTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-1.5" disabled={resetting}>
                   <RotateCcw className="h-3.5 w-3.5" />
@@ -116,16 +122,62 @@ export default function ProgressTab() {
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Restart progress for {interest}?</AlertDialogTitle>
+                  <AlertDialogTitle>Restart progress for selected domains?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This will reset all milestone completion, milestone progress, and quiz results
-                    for <span className="font-semibold">{interest}</span>. Your roadmap milestones
-                    and chat history will be kept. This action cannot be undone.
+                    Select one or more domains. Milestone completion, milestone progress, and quiz
+                    results will be reset for each. Roadmap milestones and chat history are kept.
+                    This action cannot be undone.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
+
+                <div className="my-2 flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">
+                    {selected.length} of {availableDomains.length} selected
+                  </span>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      className="text-primary hover:underline"
+                      onClick={() => setSelected(availableDomains)}
+                    >
+                      Select all
+                    </button>
+                    <button
+                      type="button"
+                      className="text-muted-foreground hover:underline"
+                      onClick={() => setSelected([])}
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </div>
+
+                <div className="max-h-64 overflow-y-auto space-y-1 rounded-md border border-border/50 p-2">
+                  {availableDomains.map((d) => (
+                    <label
+                      key={d}
+                      className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted/50 cursor-pointer"
+                    >
+                      <Checkbox
+                        checked={selected.includes(d)}
+                        onCheckedChange={() => toggleDomain(d)}
+                      />
+                      <span className="text-sm">{d}</span>
+                    </label>
+                  ))}
+                </div>
+
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleReset}>Restart</AlertDialogAction>
+                  <AlertDialogAction
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleReset();
+                    }}
+                    disabled={selected.length === 0 || resetting}
+                  >
+                    Restart {selected.length > 0 ? `(${selected.length})` : ""}
+                  </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
