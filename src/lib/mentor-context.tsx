@@ -49,7 +49,7 @@ interface MentorContextType {
   requestMilestoneQuiz: (m: { index: number; title: string; description: string }) => void;
   clearPendingQuizMilestone: () => void;
   resetDomainProgress: (domain: string) => Promise<void>;
-  resetDomainsProgress: (domains: string[]) => Promise<void>;
+  resetDomainsProgress: (domains: string[]) => Promise<{ succeeded: string[]; failed: { domain: string; error: string }[] }>;
   dataLoading: boolean;
 }
 
@@ -396,20 +396,35 @@ export function MentorProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   const resetDomainsProgress = useCallback(async (domains: string[]) => {
-    if (!user || domains.length === 0) return;
-    await Promise.all([
-      supabase.from("milestone_progress").delete().eq("user_id", user.id).in("interest", domains),
-      supabase.from("roadmap_milestones").update({ completed: false }).eq("user_id", user.id).in("interest", domains),
-      supabase.from("quiz_results").delete().eq("user_id", user.id).in("interest", domains),
-    ]);
-    setRoadmapsByDomain((prev) => {
-      const next = { ...prev };
-      for (const d of domains) {
-        if (next[d]) next[d] = next[d].map((m) => ({ ...m, completed: false, progress: 0 }));
+    const result = { succeeded: [] as string[], failed: [] as { domain: string; error: string }[] };
+    if (!user || domains.length === 0) return result;
+
+    await Promise.all(domains.map(async (domain) => {
+      try {
+        const [r1, r2, r3] = await Promise.all([
+          supabase.from("milestone_progress").delete().eq("user_id", user.id).eq("interest", domain),
+          supabase.from("roadmap_milestones").update({ completed: false }).eq("user_id", user.id).eq("interest", domain),
+          supabase.from("quiz_results").delete().eq("user_id", user.id).eq("interest", domain),
+        ]);
+        const err = r1.error || r2.error || r3.error;
+        if (err) throw new Error(err.message);
+        result.succeeded.push(domain);
+      } catch (e: any) {
+        result.failed.push({ domain, error: e?.message ?? "Unknown error" });
       }
-      return next;
-    });
-    setQuizResults((prev) => prev.filter((r) => !r.interest || !domains.includes(r.interest)));
+    }));
+
+    if (result.succeeded.length > 0) {
+      setRoadmapsByDomain((prev) => {
+        const next = { ...prev };
+        for (const d of result.succeeded) {
+          if (next[d]) next[d] = next[d].map((m) => ({ ...m, completed: false, progress: 0 }));
+        }
+        return next;
+      });
+      setQuizResults((prev) => prev.filter((r) => !r.interest || !result.succeeded.includes(r.interest)));
+    }
+    return result;
   }, [user]);
 
   return (

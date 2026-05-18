@@ -21,6 +21,7 @@ export default function ProgressTab() {
   const [resetting, setResetting] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
+  const [failedDomains, setFailedDomains] = useState<{ domain: string; error: string }[]>([]);
 
   // Discover all domains the user has touched
   const availableDomains = useMemo(() => {
@@ -37,15 +38,29 @@ export default function ProgressTab() {
   const handleReset = async () => {
     if (selected.length === 0) return;
     setResetting(true);
+    setFailedDomains([]);
     try {
-      await resetDomainsProgress(selected);
-      toast.success(
-        selected.length === 1
-          ? `Progress reset for ${selected[0]}`
-          : `Progress reset for ${selected.length} domains`
-      );
-      setSelected([]);
-      setDialogOpen(false);
+      const { succeeded, failed } = await resetDomainsProgress(selected);
+
+      if (succeeded.length > 0 && failed.length === 0) {
+        toast.success(
+          succeeded.length === 1
+            ? `Progress reset for ${succeeded[0]}`
+            : `Progress reset for ${succeeded.length} domains`
+        );
+        setSelected([]);
+        setDialogOpen(false);
+      } else if (succeeded.length > 0 && failed.length > 0) {
+        toast.warning(
+          `Reset ${succeeded.length} of ${succeeded.length + failed.length} domains. ${failed.length} failed.`
+        );
+        // Keep only failed ones selected so the user can retry
+        setSelected(failed.map((f) => f.domain));
+        setFailedDomains(failed);
+      } else {
+        toast.error(`Failed to reset progress for ${failed.length} domain${failed.length === 1 ? "" : "s"}`);
+        setFailedDomains(failed);
+      }
     } catch {
       toast.error("Failed to reset progress");
     } finally {
@@ -111,7 +126,10 @@ export default function ProgressTab() {
               open={dialogOpen}
               onOpenChange={(open) => {
                 setDialogOpen(open);
-                if (open) setSelected(interest ? [interest] : []);
+                if (open) {
+                  setSelected(interest ? [interest] : []);
+                  setFailedDomains([]);
+                }
               }}
             >
               <AlertDialogTrigger asChild>
@@ -129,6 +147,25 @@ export default function ProgressTab() {
                     This action cannot be undone.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
+
+                {failedDomains.length > 0 && (
+                  <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm">
+                    <p className="font-medium text-destructive mb-1">
+                      Failed to reset {failedDomains.length} domain{failedDomains.length === 1 ? "" : "s"}
+                    </p>
+                    <ul className="space-y-0.5 text-xs text-destructive/90 list-disc list-inside">
+                      {failedDomains.map((f) => (
+                        <li key={f.domain}>
+                          <span className="font-medium">{f.domain}</span>
+                          <span className="text-destructive/70"> — {f.error}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Successful domains were reset. You can retry the failed ones below.
+                    </p>
+                  </div>
+                )}
 
                 <div className="my-2 flex items-center justify-between text-xs">
                   <span className="text-muted-foreground">
