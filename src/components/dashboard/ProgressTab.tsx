@@ -35,12 +35,12 @@ export default function ProgressTab() {
   const toggleDomain = (d: string) =>
     setSelected((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]));
 
-  const handleReset = async () => {
-    if (selected.length === 0) return;
+  const handleReset = async (targetDomains?: string[]) => {
+    const targets = targetDomains ?? selected;
+    if (targets.length === 0) return;
     setResetting(true);
-    setFailedDomains([]);
     try {
-      const { succeeded, failed } = await resetDomainsProgress(selected);
+      const { succeeded, failed } = await resetDomainsProgress(targets);
 
       if (succeeded.length > 0 && failed.length === 0) {
         toast.success(
@@ -49,6 +49,7 @@ export default function ProgressTab() {
             : `Progress reset for ${succeeded.length} domains`
         );
         setSelected([]);
+        setFailedDomains([]);
         setDialogOpen(false);
       } else if (succeeded.length > 0 && failed.length > 0) {
         toast.warning(
@@ -59,6 +60,7 @@ export default function ProgressTab() {
         setFailedDomains(failed);
       } else {
         toast.error(`Failed to reset progress for ${failed.length} domain${failed.length === 1 ? "" : "s"}`);
+        setSelected(failed.map((f) => f.domain));
         setFailedDomains(failed);
       }
     } catch {
