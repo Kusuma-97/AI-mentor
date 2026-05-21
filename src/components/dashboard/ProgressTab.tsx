@@ -35,12 +35,12 @@ export default function ProgressTab() {
   const toggleDomain = (d: string) =>
     setSelected((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]));
 
-  const handleReset = async () => {
-    if (selected.length === 0) return;
+  const handleReset = async (targetDomains?: string[]) => {
+    const targets = targetDomains ?? selected;
+    if (targets.length === 0) return;
     setResetting(true);
-    setFailedDomains([]);
     try {
-      const { succeeded, failed } = await resetDomainsProgress(selected);
+      const { succeeded, failed } = await resetDomainsProgress(targets);
 
       if (succeeded.length > 0 && failed.length === 0) {
         toast.success(
@@ -49,6 +49,7 @@ export default function ProgressTab() {
             : `Progress reset for ${succeeded.length} domains`
         );
         setSelected([]);
+        setFailedDomains([]);
         setDialogOpen(false);
       } else if (succeeded.length > 0 && failed.length > 0) {
         toast.warning(
@@ -59,6 +60,7 @@ export default function ProgressTab() {
         setFailedDomains(failed);
       } else {
         toast.error(`Failed to reset progress for ${failed.length} domain${failed.length === 1 ? "" : "s"}`);
+        setSelected(failed.map((f) => f.domain));
         setFailedDomains(failed);
       }
     } catch {
@@ -161,9 +163,26 @@ export default function ProgressTab() {
                         </li>
                       ))}
                     </ul>
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      Successful domains were reset. You can retry the failed ones below.
-                    </p>
+                    <div className="mt-2 flex items-center justify-between gap-2">
+                      <p className="text-xs text-muted-foreground">
+                        Successful domains were reset. Retry just the failed ones below.
+                      </p>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="h-7 gap-1.5 border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                        onClick={() => handleReset(failedDomains.map((f) => f.domain))}
+                        disabled={resetting}
+                      >
+                        {resetting ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <RotateCcw className="h-3.5 w-3.5" />
+                        )}
+                        Retry failed
+                      </Button>
+                    </div>
                   </div>
                 )}
 
