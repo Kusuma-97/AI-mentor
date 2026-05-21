@@ -32,10 +32,11 @@ export default function ProgressTab() {
     return Array.from(set).sort();
   }, [quizResults, chatsByDomain, interest]);
 
-  const toggleDomain = (d: string) =>
+  const toggleDomain = useCallback((d: string) => {
     setSelected((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]));
+  }, []);
 
-  const handleReset = async (targetDomains?: string[]) => {
+  const handleReset = useCallback(async (targetDomains?: string[]) => {
     const targets = targetDomains ?? selected;
     if (targets.length === 0) return;
     setResetting(true);
@@ -55,7 +56,6 @@ export default function ProgressTab() {
         toast.warning(
           `Reset ${succeeded.length} of ${succeeded.length + failed.length} domains. ${failed.length} failed.`
         );
-        // Keep only failed ones selected so the user can retry
         setSelected(failed.map((f) => f.domain));
         setFailedDomains(failed);
       } else {
@@ -68,7 +68,7 @@ export default function ProgressTab() {
     } finally {
       setResetting(false);
     }
-  };
+  }, [selected, resetDomainsProgress]);
   const { currentStreak, longestStreak, earnedBadges } = useStreaks();
 
   // Scope quizzes to current domain + difficulty (legacy rows without level fall back to interest match)
