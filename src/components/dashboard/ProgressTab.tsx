@@ -72,34 +72,49 @@ export default function ProgressTab() {
   const { currentStreak, longestStreak, earnedBadges } = useStreaks();
 
   // Scope quizzes to current domain + difficulty (legacy rows without level fall back to interest match)
-  const scopedQuizzes = quizResults.filter((r) => {
-    const interestMatch = !interest || !r.interest || r.interest === interest;
-    const levelMatch = !r.level || !level || r.level === level;
-    return interestMatch && levelMatch;
-  });
+  const scopedQuizzes = useMemo(
+    () =>
+      quizResults.filter((r) => {
+        const interestMatch = !interest || !r.interest || r.interest === interest;
+        const levelMatch = !r.level || !level || r.level === level;
+        return interestMatch && levelMatch;
+      }),
+    [quizResults, interest, level]
+  );
 
-  const totalQuizzes = scopedQuizzes.length;
-  const avgAccuracy = totalQuizzes > 0
-    ? Math.round(scopedQuizzes.reduce((sum, r) => sum + (r.score / r.total) * 100, 0) / totalQuizzes)
-    : 0;
-  const roadmapProgress = roadmap.length > 0
-    ? Math.round(roadmap.reduce((sum, m) => sum + (m.progress ?? (m.completed ? 100 : 0)), 0) / roadmap.length)
-    : 0;
+  const { totalQuizzes, avgAccuracy, chartData } = useMemo(() => {
+    const total = scopedQuizzes.length;
+    const avg = total > 0
+      ? Math.round(scopedQuizzes.reduce((sum, r) => sum + (r.score / r.total) * 100, 0) / total)
+      : 0;
+    const data = scopedQuizzes.map((r, i) => ({
+      name: `Q${i + 1}`,
+      score: Math.round((r.score / r.total) * 100),
+    }));
+    return { totalQuizzes: total, avgAccuracy: avg, chartData: data };
+  }, [scopedQuizzes]);
 
-  const chartData = scopedQuizzes.map((r, i) => ({
-    name: `Q${i + 1}`,
-    score: Math.round((r.score / r.total) * 100),
-  }));
+  const roadmapProgress = useMemo(
+    () =>
+      roadmap.length > 0
+        ? Math.round(roadmap.reduce((sum, m) => sum + (m.progress ?? (m.completed ? 100 : 0)), 0) / roadmap.length)
+        : 0,
+    [roadmap]
+  );
 
-  const chartConfig = {
-    score: { label: "Score %", color: "hsl(var(--primary))" },
-  };
+  const chartConfig = useMemo(
+    () => ({ score: { label: "Score %", color: "hsl(var(--primary))" } }),
+    []
+  );
 
-  const metrics = [
-    { icon: Target, label: "Quizzes Taken", value: totalQuizzes, color: "text-primary" },
-    { icon: BarChart3, label: "Avg Accuracy", value: `${avgAccuracy}%`, color: "text-accent" },
-    { icon: BookOpen, label: "Topics Explored", value: topicsExplored.length, color: "text-warning" },
-  ];
+  const metrics = useMemo(
+    () => [
+      { icon: Target, label: "Quizzes Taken", value: totalQuizzes, color: "text-primary" },
+      { icon: BarChart3, label: "Avg Accuracy", value: `${avgAccuracy}%`, color: "text-accent" },
+      { icon: BookOpen, label: "Topics Explored", value: topicsExplored.length, color: "text-warning" },
+    ],
+    [totalQuizzes, avgAccuracy, topicsExplored.length]
+  );
 
   return (
     <div className="space-y-6">
