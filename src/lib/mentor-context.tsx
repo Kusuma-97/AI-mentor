@@ -399,6 +399,60 @@ export function MentorProvider({ children }: { children: React.ReactNode }) {
     const result = { succeeded: [] as string[], failed: [] as { domain: string; error: string }[] };
     if (!user || domains.length === 0) return result;
 
+    const friendlyError = (err: any): string => {
+      if (!err) return "Unknown error";
+      const code = String(err.code ?? "").toLowerCase();
+      const status = Number(err.status ?? 0);
+      const raw = String(err.message ?? "").toLowerCase();
+
+      // Network / connectivity
+      if (
+        raw.includes("failed to fetch") ||
+        raw.includes("networkerror") ||
+        raw.includes("network request failed") ||
+        raw.includes("load failed") ||
+        code === "network_error"
+      ) {
+        return "Network error — check your connection and try again.";
+      }
+      // Timeout
+      if (raw.includes("timeout") || code === "57014" || status === 408 || status === 504) {
+        return "The server took too long to respond. Please try again.";
+      }
+      // Auth / session expired
+      if (status === 401 || raw.includes("jwt") || raw.includes("not authenticated")) {
+        return "Your session expired. Please sign in again.";
+      }
+      // Permission / RLS
+      if (
+        status === 403 ||
+        code === "42501" ||
+        code === "pgrst301" ||
+        raw.includes("permission denied") ||
+        raw.includes("row-level security") ||
+        raw.includes("rls")
+      ) {
+        return "You don't have permission to reset this domain.";
+      }
+      // Not found
+      if (status === 404 || code === "pgrst116" || raw.includes("not found") || raw.includes("no rows")) {
+        return "No progress found for this domain.";
+      }
+      // Conflict / constraint
+      if (status === 409 || code.startsWith("23")) {
+        return "This domain couldn't be reset due to a data conflict.";
+      }
+      // Rate limited
+      if (status === 429 || raw.includes("rate limit")) {
+        return "Too many requests. Wait a moment and try again.";
+      }
+      // Server error
+      if (status >= 500) {
+        return "Server error. Please try again shortly.";
+      }
+      return "Something went wrong while resetting this domain.";
+    };
+
     await Promise.all(domains.map(async (domain) => {
       try {
         const [r1, r2, r3] = await Promise.all([
@@ -407,10 +461,13 @@ export function MentorProvider({ children }: { children: React.ReactNode }) {
           supabase.from("quiz_results").delete().eq("user_id", user.id).eq("interest", domain),
         ]);
         const err = r1.error || r2.error || r3.error;
-        if (err) throw new Error(err.message);
+        if (err) {
+          result.failed.push({ domain, error: friendlyError(err) });
+          return;
+        }
         result.succeeded.push(domain);
       } catch (e: any) {
-        result.failed.push({ domain, error: e?.message ?? "Unknown error" });
+        result.failed.push({ domain, error: friendlyError(e) });
       }
     }));
 
