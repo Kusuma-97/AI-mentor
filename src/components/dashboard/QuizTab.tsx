@@ -323,8 +323,14 @@ export default function QuizTab() {
       <div className="h-1 -mt-2 bg-muted rounded-full overflow-hidden">
         <motion.div
           className={`h-full rounded-full ${secondsLeft <= 5 ? "bg-destructive" : secondsLeft <= 10 ? "bg-warning" : "gradient-primary"}`}
-          animate={{ width: `${timePct}%` }}
-          transition={{ duration: 0.4, ease: "linear" }}
+          animate={{
+            width: `${timePct}%`,
+            opacity: secondsLeft <= 5 && selected === null ? [1, 0.4, 1] : 1,
+          }}
+          transition={{
+            width: { duration: 0.4, ease: "linear" },
+            opacity: { duration: 0.6, repeat: secondsLeft <= 5 && selected === null ? Infinity : 0 },
+          }}
         />
       </div>
       <AnimatePresence mode="wait">
@@ -335,77 +341,142 @@ export default function QuizTab() {
           exit={{ opacity: 0, x: -30 }}
           transition={{ duration: 0.3 }}
         >
-          <Card className="border-border/50 hover:shadow-md transition-shadow">
-            <CardHeader>
-              <CardTitle className="text-lg">{q.question}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {q.options.map((opt, i) => {
-                let variant: "outline" | "default" | "destructive" | "secondary" | "ghost" | "link" = "outline";
-                let icon = null;
-                if (selected !== null) {
-                  if (i === q.correct) { variant = "default"; icon = <CheckCircle className="h-4 w-4" />; }
-                  else if (i === selected) { icon = <XCircle className="h-4 w-4" />; }
-                }
-                return (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.06 }}
-                    whileHover={selected === null ? { scale: 1.01, x: 4 } : {}}
-                  >
-                    <Button
-                      variant={variant}
-                      className={`w-full justify-start text-left gap-2 ${
-                        selected !== null && i === q.correct ? "gradient-primary text-primary-foreground" : ""
-                      } ${selected !== null && i === selected && i !== q.correct ? "border-destructive text-destructive" : ""}`}
-                      onClick={() => handleAnswer(i)}
-                      disabled={selected !== null}
+          <motion.div
+            animate={
+              selected !== null && selected !== q.correct && selected !== -1
+                ? { x: [0, -10, 10, -8, 8, -4, 4, 0] }
+                : { x: 0 }
+            }
+            transition={{ duration: 0.5 }}
+            className="relative"
+          >
+            {/* Confetti burst on correct */}
+            <AnimatePresence>
+              {selected !== null && selected === q.correct && (
+                <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-center overflow-visible z-10">
+                  {Array.from({ length: 16 }).map((_, i) => {
+                    const angle = (i / 16) * Math.PI * 2;
+                    const dist = 90 + Math.random() * 70;
+                    const colors = ["bg-primary", "bg-accent", "bg-warning", "bg-success"];
+                    return (
+                      <motion.span
+                        key={i}
+                        initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+                        animate={{
+                          x: Math.cos(angle) * dist,
+                          y: Math.sin(angle) * dist * 0.6 + 30,
+                          opacity: 0,
+                          scale: 0.3,
+                          rotate: Math.random() * 540,
+                        }}
+                        transition={{ duration: 1, ease: "easeOut" }}
+                        className={`absolute top-4 h-2 w-2 rounded-sm ${colors[i % colors.length]}`}
+                      />
+                    );
+                  })}
+                </div>
+              )}
+            </AnimatePresence>
+
+            <Card className={`border-border/50 hover:shadow-md transition-all ${
+              selected !== null && selected === q.correct ? "ring-2 ring-success/50 shadow-lg shadow-success/10" : ""
+            } ${selected !== null && selected !== q.correct && selected !== -1 ? "ring-2 ring-destructive/40" : ""}`}>
+              <CardHeader>
+                <CardTitle className="text-lg">{q.question}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {q.options.map((opt, i) => {
+                  let variant: "outline" | "default" | "destructive" | "secondary" | "ghost" | "link" = "outline";
+                  let icon = null;
+                  if (selected !== null) {
+                    if (i === q.correct) { variant = "default"; icon = <CheckCircle className="h-4 w-4" />; }
+                    else if (i === selected) { icon = <XCircle className="h-4 w-4" />; }
+                  }
+                  const isChosen = selected !== null && i === selected;
+                  const isCorrect = selected !== null && i === q.correct;
+                  return (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={
+                        isCorrect
+                          ? { opacity: 1, y: 0, scale: [1, 1.04, 1] }
+                          : isChosen && !isCorrect
+                            ? { opacity: 1, y: 0, scale: [1, 0.97, 1] }
+                            : { opacity: 1, y: 0, scale: 1 }
+                      }
+                      transition={{ delay: selected === null ? i * 0.06 : 0, duration: 0.35 }}
+                      whileHover={selected === null ? { scale: 1.01, x: 4 } : {}}
+                      whileTap={selected === null ? { scale: 0.98 } : {}}
                     >
-                      <span className="inline-flex items-center justify-center h-5 w-5 rounded text-xs font-semibold bg-muted text-muted-foreground shrink-0">
-                        {i + 1}
-                      </span>
-                      {icon}
-                      <span className="flex-1">{opt}</span>
-                    </Button>
-                  </motion.div>
-                );
-              })}
-              <AnimatePresence>
-                {selected !== null && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.25 }}
-                  >
-                    <div className={`mt-4 p-3 rounded-lg border text-sm ${
-                      selected === q.correct
-                        ? "bg-success/10 border-success/30 text-foreground"
-                        : selected === -1
-                          ? "bg-warning/10 border-warning/30 text-foreground"
-                          : "bg-destructive/10 border-destructive/30 text-foreground"
-                    }`}>
-                      <strong className={
-                        selected === q.correct ? "text-success" : selected === -1 ? "text-warning" : "text-destructive"
-                      }>
-                        {selected === q.correct ? "Correct!" : selected === -1 ? "Time's up!" : "Not quite."}
-                      </strong>{" "}
-                      {q.explanation}
-                    </div>
-                    <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
-                      <Button className="w-full mt-2 gradient-primary text-primary-foreground" onClick={next}>
-                        {current < questions.length - 1 ? "Next Question" : "Finish Quiz"}
+                      <Button
+                        variant={variant}
+                        className={`w-full justify-start text-left gap-2 transition-all ${
+                          isCorrect ? "gradient-primary text-primary-foreground shadow-lg shadow-primary/30" : ""
+                        } ${isChosen && !isCorrect ? "border-destructive text-destructive" : ""} ${
+                          selected !== null && !isChosen && !isCorrect ? "opacity-50" : ""
+                        }`}
+                        onClick={() => handleAnswer(i)}
+                        disabled={selected !== null}
+                      >
+                        <span className={`inline-flex items-center justify-center h-5 w-5 rounded text-xs font-semibold shrink-0 transition-colors ${
+                          isCorrect ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-muted-foreground"
+                        }`}>
+                          {i + 1}
+                        </span>
+                        {icon}
+                        <span className="flex-1">{opt}</span>
                       </Button>
                     </motion.div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </CardContent>
-          </Card>
+                  );
+                })}
+                <AnimatePresence>
+                  {selected !== null && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.25 }}
+                    >
+                      <motion.div
+                        initial={{ opacity: 0, y: -6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                        className={`mt-4 p-3 rounded-lg border text-sm ${
+                          selected === q.correct
+                            ? "bg-success/10 border-success/30 text-foreground"
+                            : selected === -1
+                              ? "bg-warning/10 border-warning/30 text-foreground"
+                              : "bg-destructive/10 border-destructive/30 text-foreground"
+                        }`}
+                      >
+                        <strong className={
+                          selected === q.correct ? "text-success" : selected === -1 ? "text-warning" : "text-destructive"
+                        }>
+                          {selected === q.correct ? "Correct!" : selected === -1 ? "Time's up!" : "Not quite."}
+                        </strong>{" "}
+                        {q.explanation}
+                      </motion.div>
+                      <motion.div
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.18 }}
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.99 }}
+                      >
+                        <Button className="w-full mt-2 gradient-primary text-primary-foreground" onClick={next}>
+                          {current < questions.length - 1 ? "Next Question →" : "Finish Quiz 🏁"}
+                        </Button>
+                      </motion.div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </CardContent>
+            </Card>
+          </motion.div>
         </motion.div>
       </AnimatePresence>
     </div>
   );
 }
+
