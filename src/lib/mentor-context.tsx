@@ -453,6 +453,42 @@ export function MentorProvider({ children }: { children: React.ReactNode }) {
       return "Something went wrong while resetting this domain.";
     };
 
+    const applyOptimistic = (succeeded: string[]) => {
+      if (succeeded.length === 0) return;
+      const succeededSet = new Set(succeeded);
+      setRoadmapsByDomain((prev) => {
+        let changed = false;
+        const next: Record<string, RoadmapMilestone[]> = { ...prev };
+        for (const d of succeeded) {
+          if (next[d]) {
+            next[d] = next[d].map((m) => ({ ...m, completed: false, progress: 0 }));
+            changed = true;
+          }
+        }
+        return changed ? next : prev;
+      });
+      setQuizResults((prev) => prev.filter((r) => !r.interest || !succeededSet.has(r.interest)));
+    };
+
+    // Fast path: one batched request per table for ALL domains.
+    // Collapses 3*N round-trips into 3 total when everything succeeds.
+    try {
+      const [r1, r2, r3] = await Promise.all([
+        supabase.from("milestone_progress").delete().eq("user_id", user.id).in("interest", domains),
+        supabase.from("roadmap_milestones").update({ completed: false }).eq("user_id", user.id).in("interest", domains),
+        supabase.from("quiz_results").delete().eq("user_id", user.id).in("interest", domains),
+      ]);
+      const err = r1.error || r2.error || r3.error;
+      if (!err) {
+        result.succeeded = [...domains];
+        applyOptimistic(result.succeeded);
+        return result;
+      }
+    } catch {
+      // fall through to per-domain to attribute failures
+    }
+
+    // Fallback: per-domain to attribute success/failure precisely.
     await Promise.all(domains.map(async (domain) => {
       try {
         const [r1, r2, r3] = await Promise.all([
@@ -471,16 +507,7 @@ export function MentorProvider({ children }: { children: React.ReactNode }) {
       }
     }));
 
-    if (result.succeeded.length > 0) {
-      setRoadmapsByDomain((prev) => {
-        const next = { ...prev };
-        for (const d of result.succeeded) {
-          if (next[d]) next[d] = next[d].map((m) => ({ ...m, completed: false, progress: 0 }));
-        }
-        return next;
-      });
-      setQuizResults((prev) => prev.filter((r) => !r.interest || !result.succeeded.includes(r.interest)));
-    }
+    applyOptimistic(result.succeeded);
     return result;
   }, [user]);
 
