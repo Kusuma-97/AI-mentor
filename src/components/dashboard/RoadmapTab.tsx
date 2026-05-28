@@ -7,9 +7,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { Loader2, RefreshCw, Map, ExternalLink, HelpCircle, History } from "lucide-react";
 import { toast } from "sonner";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
@@ -20,7 +20,7 @@ const containerVariants = {
   },
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 28, scale: 0.97 },
   show: {
     opacity: 1,
@@ -35,7 +35,7 @@ const itemVariants = {
   },
 };
 
-const innerVariants = {
+const innerVariants: Variants = {
   hidden: { opacity: 0, x: -12 },
   show: {
     opacity: 1,
@@ -44,7 +44,7 @@ const innerVariants = {
   },
 };
 
-const lineDrawVariants = {
+const lineDrawVariants: Variants = {
   hidden: { scaleY: 0, originY: 0 },
   show: {
     scaleY: 1,
