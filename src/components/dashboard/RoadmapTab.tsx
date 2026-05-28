@@ -7,7 +7,51 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { Loader2, RefreshCw, Map, ExternalLink, HelpCircle, History } from "lucide-react";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.15,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 28, scale: 0.97 },
+  show: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      type: "spring",
+      stiffness: 120,
+      damping: 18,
+      mass: 0.8,
+    },
+  },
+};
+
+const innerVariants = {
+  hidden: { opacity: 0, x: -12 },
+  show: {
+    opacity: 1,
+    x: 0,
+    transition: { type: "spring", stiffness: 180, damping: 22 },
+  },
+};
+
+const lineDrawVariants = {
+  hidden: { scaleY: 0, originY: 0 },
+  show: {
+    scaleY: 1,
+    transition: { duration: 0.6, ease: "easeInOut", delay: 0.1 },
+  },
+};
+
 
 const KNOWN_SITES: Record<string, string> = {
   "mdn": "https://developer.mozilla.org",
