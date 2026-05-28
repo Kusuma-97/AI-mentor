@@ -7,7 +7,51 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { Loader2, RefreshCw, Map, ExternalLink, HelpCircle, History } from "lucide-react";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
+
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.15,
+    },
+  },
+};
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 28, scale: 0.97 },
+  show: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      type: "spring",
+      stiffness: 120,
+      damping: 18,
+      mass: 0.8,
+    },
+  },
+};
+
+const innerVariants: Variants = {
+  hidden: { opacity: 0, x: -12 },
+  show: {
+    opacity: 1,
+    x: 0,
+    transition: { type: "spring", stiffness: 180, damping: 22 },
+  },
+};
+
+const lineDrawVariants: Variants = {
+  hidden: { scaleY: 0, originY: 0 },
+  show: {
+    scaleY: 1,
+    transition: { duration: 0.6, ease: "easeInOut", delay: 0.1 },
+  },
+};
+
 
 const KNOWN_SITES: Record<string, string> = {
   "mdn": "https://developer.mozilla.org",
@@ -123,11 +167,15 @@ export default function RoadmapTab() {
     : 0;
 
   return (
-    <div className="space-y-4">
+    <motion.div
+      className="space-y-4 relative"
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+    >
       <motion.div
         className="flex items-center justify-between p-3 rounded-lg bg-card/60 border border-border/50"
-        initial={{ opacity: 0, y: -8 }}
-        animate={{ opacity: 1, y: 0 }}
+        variants={itemVariants}
       >
         <div className="flex items-center gap-3">
           <p className="text-sm text-muted-foreground">{completed}/{roadmap.length} done · {progress}% overall</p>
@@ -136,7 +184,7 @@ export default function RoadmapTab() {
               className="h-full gradient-primary rounded-full"
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
             />
           </div>
         </div>
@@ -145,29 +193,68 @@ export default function RoadmapTab() {
           Regenerate
         </Button>
       </motion.div>
+
+      {/* Connecting timeline line */}
+      <motion.div
+        className="absolute left-[19px] top-[68px] bottom-4 w-0.5 bg-gradient-to-b from-primary/40 via-primary/20 to-transparent rounded-full"
+        variants={lineDrawVariants}
+        initial="hidden"
+        animate="show"
+      />
+
       {roadmap.map((milestone, i) => (
         <motion.div
           key={i}
-          initial={{ opacity: 0, x: -16 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: i * 0.06, duration: 0.3 }}
-          whileHover={{ x: 4 }}
+          variants={itemVariants}
+          whileHover={{ x: 6, transition: { type: "spring", stiffness: 250, damping: 20 } }}
+          className="relative"
         >
-          <Card className={`transition-all duration-300 border-border/50 ${milestone.completed ? "opacity-60 bg-muted/30" : "hover:shadow-md hover:border-primary/20"}`}>
-            <CardHeader className="pb-2 flex flex-row items-start gap-3">
+          {/* Step number badge */}
+          <motion.div
+            className="absolute -left-1 top-4 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-lg shadow-primary/30 ring-2 ring-background"
+            initial={{ scale: 0, rotate: -45 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 15, delay: 0.15 + i * 0.1 }}
+          >
+            {i + 1}
+          </motion.div>
+
+          <Card className={`ml-10 transition-all duration-300 border-border/50 ${milestone.completed ? "opacity-60 bg-muted/30" : "hover:shadow-md hover:border-primary/20"}`}>
+            <CardHeader className="pb-2 flex flex-row items-start gap-3 pl-4">
               <Checkbox checked={milestone.completed} onCheckedChange={() => toggleMilestone(i)} className="mt-1" />
               <div>
                 <CardTitle className={`text-base ${milestone.completed ? "line-through" : ""}`}>
-                  <span className="text-primary font-bold mr-1">{i + 1}.</span> {milestone.title}
+                  {milestone.title}
                 </CardTitle>
-                <p className="text-sm text-muted-foreground mt-1">{milestone.description}</p>
+                <motion.p
+                  className="text-sm text-muted-foreground mt-1"
+                  variants={innerVariants}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true }}
+                >
+                  {milestone.description}
+                </motion.p>
               </div>
             </CardHeader>
             <CardContent className="pt-0 pl-12 space-y-3">
-              <div>
+              <motion.div
+                variants={innerVariants}
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true }}
+              >
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-xs font-medium text-primary/70">Progress</span>
-                  <span className="text-xs font-semibold text-primary">{milestone.progress ?? 0}%</span>
+                  <motion.span
+                    className="text-xs font-semibold text-primary"
+                    key={milestone.progress}
+                    initial={{ scale: 1.4, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  >
+                    {milestone.progress ?? 0}%
+                  </motion.span>
                 </div>
                 <Slider
                   value={[milestone.progress ?? 0]}
@@ -175,16 +262,25 @@ export default function RoadmapTab() {
                   max={100}
                   step={5}
                 />
-              </div>
-              <Button
-                size="sm"
-                variant="outline"
-                className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10"
-                onClick={() => requestMilestoneQuiz({ index: i, title: milestone.title, description: milestone.description })}
+              </motion.div>
+
+              <motion.div
+                variants={innerVariants}
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true }}
               >
-                <HelpCircle className="h-3.5 w-3.5" />
-                Take Module Quiz
-              </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10"
+                  onClick={() => requestMilestoneQuiz({ index: i, title: milestone.title, description: milestone.description })}
+                >
+                  <HelpCircle className="h-3.5 w-3.5" />
+                  Take Module Quiz
+                </Button>
+              </motion.div>
+
               {(() => {
                 const titleLower = milestone.title.toLowerCase().trim();
                 const history = quizResults
@@ -195,7 +291,13 @@ export default function RoadmapTab() {
                   .sort((a, b) => b.timestamp - a.timestamp);
                 if (history.length === 0) return null;
                 return (
-                  <div className="rounded-md border border-border/50 bg-muted/20 p-3">
+                  <motion.div
+                    className="rounded-md border border-border/50 bg-muted/20 p-3"
+                    variants={innerVariants}
+                    initial="hidden"
+                    whileInView="show"
+                    viewport={{ once: true }}
+                  >
                     <div className="flex items-center gap-1.5 mb-2">
                       <History className="h-3.5 w-3.5 text-primary/70" />
                       <span className="text-xs font-medium text-primary/70">
@@ -222,18 +324,36 @@ export default function RoadmapTab() {
                         );
                       })}
                     </ul>
-                  </div>
+                  </motion.div>
                 );
               })()}
             </CardContent>
             {milestone.resources.length > 0 && (
               <CardContent className="pt-0 pl-12">
-                <p className="text-xs font-medium text-primary/70 mb-1">Resources:</p>
-                <ul className="text-sm space-y-1.5">
+                <motion.p
+                  className="text-xs font-medium text-primary/70 mb-1"
+                  variants={innerVariants}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true }}
+                >
+                  Resources:
+                </motion.p>
+                <motion.ul
+                  className="text-sm space-y-1.5"
+                  variants={containerVariants}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true }}
+                >
                   {milestone.resources.map((r, j) => {
                     const { label, url } = parseResource(r);
                     return (
-                      <li key={j}>
+                      <motion.li
+                        key={j}
+                        variants={innerVariants}
+                        whileHover={{ x: 4, transition: { type: "spring", stiffness: 300, damping: 20 } }}
+                      >
                         {url ? (
                           <a
                             href={url}
@@ -247,15 +367,15 @@ export default function RoadmapTab() {
                         ) : (
                           <span className="text-muted-foreground">• {label}</span>
                         )}
-                      </li>
+                      </motion.li>
                     );
                   })}
-                </ul>
+                </motion.ul>
               </CardContent>
             )}
           </Card>
         </motion.div>
       ))}
-    </div>
+    </motion.div>
   );
 }
