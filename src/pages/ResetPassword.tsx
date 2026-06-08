@@ -17,7 +17,7 @@ export default function ResetPassword() {
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
   const [valid, setValid] = useState(false);
-  const { updatePassword } = useAuth();
+  const { updatePassword, user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -44,7 +44,7 @@ export default function ResetPassword() {
     try {
       await updatePassword(password);
       toast.success("Password updated! Please sign in.");
-      navigate("/auth");
+      navigate("/auth", { state: { email: user?.email } });
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Failed to update password");
     } finally {
